@@ -1,0 +1,11 @@
+#Für Huffle-Home:
+#AddHandler php53-cgi .php
+
+<IfModule mod_rewrite.c>
+    Options -MultiViews
+
+    RewriteEngine On
+    RewriteBase /hufflenews #Pfad anpassen!
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>

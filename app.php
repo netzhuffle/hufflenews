@@ -7,5 +7,8 @@ $app->get('/', function() {
     return "Huffle-Newsletter!";
 });
 
+$app->get('/twigtest', function() {
+});
+
 return $app;
 ?>

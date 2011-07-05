@@ -5,8 +5,7 @@
     Options -MultiViews
 
     RewriteEngine On
-#   Pfad anpassen!
-    RewriteBase /hufflenews
+    RewriteBase /hufflenews #Pfad anpassen!
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^(.*)$ index.php [QSA,L]
 </IfModule>

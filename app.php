@@ -18,7 +18,7 @@ $convertToken = function($token) { // Teilt $token in $token['user'] und $token[
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function () use ($app) {
-    return "Huffle-Newsletter-Formular!";
+    return $app['twig']->render('home.twig');
 });
 
 /* Registrierung (verschickt Bestätigungs-Mail) */

@@ -49,14 +49,6 @@ $app->post('/options/{token}', function ($token) use ($app) {
     return "Newsletter ($newsletter) und Benachrichtigungen ($notification) theoretisch gespeichert!";
 })->convert('token', $convertToken);
 
-/* Twig-Test (Spielwiese) */
-$app->get('/twigtest/{name}', function ($name) use ($app) {
-    return $app['twig']->render('test.twig', array(
-        'name'  => $name,
-        'email' => $name.'@example.com'
-    ));
-});
-
 /* Fehler */
 $app->error(function() use ($app) {
     return "Nix gut.";

@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+{# Grundgerüst-Versuch #}
+{#	{% Forschleifen, ... ausführen %}	#}
+{#	{{ Ausdruck ausgeben }}	#}
+<html>
+	<head>
+		<title>Hufflepuff-News</title>
+		<style>
+			body {
+				margin: 0px;
+				padding: 0px;
+				background: url(http://www.huffle-home.de/newsletter/paper.gif);
+			}
+			#banner {
+				position: absolute;
+				top: 0px;
+				left: 0px;
+				height: 380px;
+				width: 380px;
+				z-index: 300;
+			}
+			#inhalt {
+				position: absolute;
+				top: 200px;
+				left: 200px;
+				right: 50px;
+				z-index: 600;
+				text-align: center;
+				font-family: 'Comic Sans MS', sans-serif;
+				font-size: 1.3em;
+			}
+		</style>
+	</head>
+	<body>
+    	<div id="banner"><img src="http://www.huffle-home.de/newsletter/logo.png" alt="Hufflepuff-Newsletter"></div>
+		<div id="inhalt">
+			{% block content %}{% endblock %}
+    	</div>
+	</body>
+</html>

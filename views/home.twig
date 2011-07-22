@@ -1,0 +1,20 @@
+{% extends "basis.twig" %}
+
+{% block content %}
+	Eintragen:
+	<form method=post action={{ app.request.uriForPath("/register") }}>
+	<p>
+		<label>Name: <input required name=name></label><br>
+		<label>E-Mail: <input required type=email name=email></label>
+	</p>
+	<p>
+		Was m&ouml;chtest du zugeschickt bekommen?<br>
+		<label> <input type=checkbox name=abo[] value=newsletter> Newsletter</label>
+		<label> <input type=checkbox name=abo[] value=notifications> Benachrichtigungen (Quizfragen, ...)</label>
+	</p>
+	<p>
+		<label>Und zum Schluss noch das Hauspasswort:<br><input required name=password></label>
+		<button>Senden!</button>
+	</p>
+	</form>
+{% endblock %}

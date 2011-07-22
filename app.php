@@ -7,6 +7,7 @@ $app->register(new Silex\Extension\TwigExtension(), array(
     'twig.path'		  => __DIR__.'/views',
     'twig.class_path' => __DIR__.'/vendor/twig'
 ));
+$app['debug'] = true; // Debug-Modus
 
 /* Zentrale Konstanten und Funktionen */
 define('OPTION_NEWSLETTER', 1); // Option: Newsletter abbonieren (Binär: 01)
@@ -25,7 +26,7 @@ $app->get('/', function () use ($app) {
 $app->post('/register', function () use ($app) {
     $request = $app['request'];
     $name = $request->get('name');
-    $mail = $request->get('mail');
+    $mail = $request->get('email');
     
     return "$name, du hast theoretisch Mail an $mail!";
 });

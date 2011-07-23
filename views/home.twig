@@ -4,16 +4,31 @@
 	Eintragen:
 	<form method=post action={{ app.request.uriForPath("/register") }}>
 	<p>
-		<label>Name: <input required name=name></label><br>
-		<label>E-Mail: <input required type=email name=email></label>
+		{% if error.name %}
+			<span class=error>Gib deinen Namen ein.<br></span>
+		{% endif %}
+		<label>Name: <input value="{{ lasttry.name }}" required name=name></label><br>
+		{% if error.email %}
+			<span class=error>Gib deine E-Mail-Adresse ein.<br></span>
+		{% endif %}
+		<label>E-Mail: <input value="{{ lasttry.email }}" required type=email name=email></label>
 	</p>
 	<p>
+		{% if error.abo %}
+			<span class=error>Wähle eines von beidem oder beides aus.<br></span>
+		{% endif %}
 		Was m&ouml;chtest du zugeschickt bekommen?<br>
-		<label> <input type=checkbox name=abo[] value=newsletter> Newsletter</label>
-		<label> <input type=checkbox name=abo[] value=notifications> Benachrichtigungen (Quizfragen, ...)</label>
+		<label> <input {% if lasttry.abo.newsletter %} checked {% endif %} type=checkbox name=abo.newsletter value=true> Newsletter</label>
+		<label> <input {% if lasttry.abo.notification %} checked {% endif %} type=checkbox name=abo.notifications value=true> Benachrichtigungen (Quizfragen, ...)</label>
 	</p>
 	<p>
-		<label>Und zum Schluss noch das Hauspasswort:<br><input required name=password></label>
+		{% if error.oldpassword %}
+			<span class=error>Oh Gott, das ist ja das alte Passwort! Wei&szlig; mit Bart und Staub und so...<br>
+			Du solltest schleunigst mal das neue holen. Echt! Na los. Bitte. Ehrlich.<br></span>
+		{% elseif error.password %}
+			<span class=error>Ups, das war wohl das falsche Passwort.<br></span>
+		{% endif %}
+		<label>Und zum Schluss noch das Hauspasswort:<br><input value="{{ lasttry.password }}" required name=password></label>
 		<button>Senden!</button>
 	</p>
 	</form>

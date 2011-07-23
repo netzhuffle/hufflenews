@@ -1,5 +1,5 @@
 <!DOCTYPE HTML>
-{# Grundgerüst-Versuch #}
+{# Grundgerüst #}
 {#	{% Forschleifen, ... ausführen %}	#}
 {#	{{ Ausdruck ausgeben }}	#}
 <html>
@@ -11,7 +11,7 @@
 				padding: 0px;
 				background: url(http://www.huffle-home.de/newsletter/paper.gif);
 			}
-			#banner {
+			img {
 				position: absolute;
 				top: 0px;
 				left: 0px;
@@ -29,10 +29,14 @@
 				font-family: 'Comic Sans MS', sans-serif;
 				font-size: 1.3em;
 			}
+			.error {
+				font-size: 0.8em;
+				color: #ff0000;
+			}
 		</style>
 	</head>
 	<body>
-    	<div id="banner"><img src="http://www.huffle-home.de/newsletter/logo.png" alt="Hufflepuff-Newsletter"></div>
+    	<img src="http://www.huffle-home.de/newsletter/logo.png" alt="Hufflepuff-Newsletter">
 		<div id="inhalt">
 			{% block content %}{% endblock %}
     	</div>

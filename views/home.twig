@@ -2,7 +2,7 @@
 
 {% block content %}
 	Eintragen:
-	<form method=post action={{ app.request.uriForPath("/register") }}>
+	<form method=post action={{ app.request.uriForPath("/check") }}>
 	<p>
 		{% if error.name %}
 			<span class=error>Gib deinen Namen ein.<br></span>

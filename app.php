@@ -29,16 +29,16 @@ $convertToken = function($token) { // Teilt $token in $token['user'] und $token[
 $app->get('/', function () use ($app) {
     $errors = $app['session']->has('errors') ? $app['session']->get('errors') : array( // Fehler beim letzten Versuch
         'name' => false,
-        'email' => true,
+        'email' => false,
         'abo' => false,
-        'password' => true,
-        'oldpassword' => true
+        'password' => false,
+        'oldpassword' => false
     );
     $lasttry = $app['session']->has('lasttry') ? $app['session']->get('lasttry') : array( // Werte vom letzten Versuch
-        'name' => 'Emilia',
-        'email' => 'emilia@ollivander.magic',
-        'abo' => array('newsletter' => true, 'notifications' => false),
-        'password' => 'Diptamessenz'
+        'name' => '',
+        'email' => '',
+        'abo' => array('newsletter' => false, 'notifications' => false),
+        'password' => ''
     );
     return $app['twig']->render('home.twig', array(
         'error' => $errors,

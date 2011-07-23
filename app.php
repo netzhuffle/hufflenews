@@ -52,20 +52,21 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
     $name = $request->get('name');
     $email = $request->get('email');
     $abo = array(
-    	'newsletter' => $request->get('abo.newsletter'),
-        'notifications' => $request->get('abo.notifications')
+    	'newsletter' => $request->get('newsletter'),
+        'notifications' => $request->get('notifications')
     );
     $password = $request->get('password');
     
     /* Admin-Bereiche */
     if($password === $newsletterpassword) {
         $app['session']->set('admin', 'newsletter');
-        $app->redirect('/admin');
+        return $app->redirect($request->getUriForPath('/admin'));
     } elseif($password === $notificationspassword) {
         $app['session']->set('admin', 'notifications');
-        $app->redirect('/admin');
+        return $app->redirect($request->getUriForPath('/admin'));
     } elseif($password === $usereditpassword) {
         $app['session']->set('admin', 'useredit');
+        return $app->redirect($request->getUriForPath('/useredit'));
     /* Registrierung */
     } else {
         $errors = array( // Prüfen auf Fehler
@@ -79,7 +80,7 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
             $app['session']->set('name', $name);
             $app['session']->set('email', $email);
             $app['session']->set('abo', $abo);
-            $app->redirect('/register');
+            return $app->redirect($request->getUriForPath('/register'));
         } else { // Falls Fehler
             $lasttry = array(
                 'name' => $name,
@@ -89,7 +90,7 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
             );
             $app['session']->set('errors', $errors);
             $app['session']->set('lasttry', $lasttry);
-            $app->redirect('/');
+            return $app->redirect($request->getUriForPath('/'));
         }
     }
 });
@@ -126,10 +127,11 @@ $app->post('/options/{token}', function ($token) use ($app) {
     return "Newsletter ($newsletter) und Benachrichtigungen ($notification) theoretisch gespeichert!";
 })->convert('token', $convertToken);
 
-/* Fehler */
+/* Fehler * /
 $app->error(function() use ($app) {
     return "Nix gut.";
 });
+*/
 
 return $app;
 ?>

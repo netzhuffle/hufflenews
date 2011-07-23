@@ -47,7 +47,7 @@ $app->get('/', function () use ($app) {
 });
 
 /* Prüft die Formular-Angaben und leitet an den richtigen Pfad weiter */
-$app->post('/check', function () use ($app) {
+$app->post('/check', function () use ($app, $newsletterpassword, $notificationspassword, $usereditpassword, $newpassword, $oldpasswords) {
     $request = $app['request'];
     $name = $request->get('name');
     $email = $request->get('email');

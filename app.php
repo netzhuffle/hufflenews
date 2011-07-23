@@ -51,10 +51,7 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
     $request = $app['request'];
     $name = $request->get('name');
     $email = $request->get('email');
-    $abo = array(
-    	'newsletter' => $request->get('newsletter'),
-        'notifications' => $request->get('notifications')
-    );
+    $abo = $request->get('abo');
     $password = $request->get('password');
     
     /* Admin-Bereiche */

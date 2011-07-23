@@ -19,7 +19,7 @@
 		{% endif %}
 		Was m&ouml;chtest du zugeschickt bekommen?<br>
 		<label> <input {% if lasttry.abo.newsletter %} checked {% endif %} type=checkbox name=abo[newsletter] value=true> Newsletter</label>
-		<label> <input {% if lasttry.abo.notification %} checked {% endif %} type=checkbox name=abo[notifications] value=true> Benachrichtigungen (Quizfragen, ...)</label>
+		<label> <input {% if lasttry.abo.notifications %} checked {% endif %} type=checkbox name=abo[notifications] value=true> Benachrichtigungen (Quizfragen, ...)</label>
 	</p>
 	<p>
 		{% if error.oldpassword %}

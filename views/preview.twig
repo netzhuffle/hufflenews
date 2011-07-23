@@ -1,0 +1,20 @@
+{% extends "basis.twig" %}
+
+{% block content %}
+	<p>So, dann lies die Mail sicherheitshalber nochmal durch. Darunter siehst du, wie sie f&uuml;r jemanden aussieht,<br>
+    der keine HTML-Mails empfangen kann. Wenn du mit allem fertig bist, kannst du unten das Senden best&auml;tigen</p>
+    <hr>
+    <p>{{ text.html|raw }}</p>
+    <hr>
+    <p id=nichthtmltext>{{ text.text }}</p>
+    <hr>
+    <form method=post action={{ app.request.uriForPath("/send") }}>
+    <label><input type=checkbox>
+    Ja, ich habe den Newsletter nochmal durchgelesen und keinen Fehler gefunden, 
+    und verspreche, dass ich, wenn ich auf Senden geklickt habe, geduldig warte, 
+    bis die Meldung kommt, dass es versendet wurde, nicht auf Abbrechen klicke, 
+    das Fenster schlie&szlig;e, Cola auf meine Tastatur tropfe, oder zuviel Knoblauch esse.
+    </label>
+	<button>Senden!</button>
+    </form>
+{% endblock %}

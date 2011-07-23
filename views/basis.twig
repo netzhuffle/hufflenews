@@ -19,6 +19,15 @@
 				width: 380px;
 				z-index: 300;
 			}
+			textarea {
+				border: 2px solid black;
+				background: url(http://www.huffle-home.de/newsletter/paper.gif);
+        		text-align: center;
+        		font-family: 'Comic Sans MS', sans-serif;
+        		font-size: 1em;
+        		left: 200px;
+        		right: 50px;
+			}
 			#inhalt {
 				position: absolute;
 				top: 200px;
@@ -29,6 +38,13 @@
 				font-family: 'Comic Sans MS', sans-serif;
 				font-size: 1.3em;
 			}
+			#nichthtmltext {
+				background: white;
+				text-align: left;
+				font-family: monospace;
+				font-size: 0.8em;
+				font-style: inherit;
+			}
 			.error {
 				font-size: 0.8em;
 				color: #ff0000;
@@ -38,7 +54,9 @@
 	<body>
     	<img src="http://www.huffle-home.de/newsletter/logo.png" alt="Hufflepuff-Newsletter">
 		<div id="inhalt">
+			{% autoescape true %}
 			{% block content %}{% endblock %}
+			{% endautoescape %}
     	</div>
 	</body>
 </html>

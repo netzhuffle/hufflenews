@@ -19,7 +19,20 @@ $convertToken = function($token) { // Teilt $token in $token['user'] und $token[
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function () use ($app) {
-    return $app['twig']->render('home.twig');
+    return $app['twig']->render('home.twig', array(
+        'error' => array( // Fehler beim letzten Versuch
+            'name' => false,
+            'email' => true,
+            'abo' => false,
+            'password' => true
+        ),
+        'lasttry' => array( // Werte vom letzten Versuch
+            'name' => 'Emilia',
+            'email' => 'emilia@ollivander.magic',
+            'abo' => array('newsletter' => true, 'notifications' => false),
+            'password' => 'Diptamessenz'
+        )
+    ));
 });
 
 /* Registrierung (verschickt Bestätigungs-Mail) */

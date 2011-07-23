@@ -95,17 +95,16 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
 });
 
 /* Registrierung (verschickt Bestätigungs-Mail) */
-$app->post('/register', function () use ($app) {
-    $request = $app['request'];
-    $name = $request->get('name');
-    $mail = $request->get('email');
-    $abo = array(
-    	'newsletter' => $request->get('abo.newsletter'),
-        'notifications' => $request->get('abo.notifications')
-    );
-    $password = $request->get('password');
+$app->get('/register', function () use ($app) {
+    $name = $app['session']->get('name');
+    $email = $app['session']->get('email');
+    $abo = $app['session']->get('abo');
     
-    return "$name, du hast theoretisch Mail an $mail!";
+    // TODO E-Mail schicken
+    
+    return $app['twig']->render('register.twig', array(
+        'name' => $name
+    ));
 });
 
 /* Mail-Bestätigung (verschickt letzten Newsletter und nimmt in Datenbank auf) */
@@ -125,12 +124,6 @@ $app->post('/options/{token}', function ($token) use ($app) {
     
     return "Newsletter ($newsletter) und Benachrichtigungen ($notification) theoretisch gespeichert!";
 })->convert('token', $convertToken);
-
-/* Fehler * /
-$app->error(function() use ($app) {
-    return "Nix gut.";
-});
-*/
 
 return $app;
 ?>

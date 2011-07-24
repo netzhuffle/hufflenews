@@ -125,11 +125,11 @@ $app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer,
     $transport->setUsername($smtpUser);
     $transport->setPassword($smtpPassword);
     $mailer = Swift_Mailer::newInstance($transport);
-    $failure = $mailer->send($message);
+    $success = $mailer->send($message);
     
     return $app['twig']->render('register.twig', array(
         'name' => $name,
-        'failure' => $failure
+        'success' => $success
     ));
 });
 

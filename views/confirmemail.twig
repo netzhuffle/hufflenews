@@ -2,9 +2,9 @@
 
 {% block content %}
 	<p>Hallo {{ name }}!</p>
-	<p>Du (oder jemand anders?) hat deine Mailadresse f&uuml;r die Hufflepuff-News eingetragen.
-    Um zu best&auml;tigen, dass du die Hufflepuff-News wirklich empfangen willst, rufe die Seite
-    <a href='http://www.huffle-home.de/newsletter/confirm/{{ token }}'> "http://www.huffle-home.de/newsletter/confirm/{{ token }}</a> auf.</p>
+	<p>Du (oder jemand anders?) hat deine Mailadresse für die Hufflepuff-News eingetragen.
+    Um zu bestätigen, dass du die Hufflepuff-News wirklich empfangen willst, rufe die Seite
+    <a href='http://www.huffle-home.de/newsletter/confirm/{{ token }}'> http://www.huffle-home.de/newsletter/confirm/{{ token }}</a> auf.</p>
     {% if newsletter %} <p>Du bekommst dann auch gleich unseren letzten Newsletter zugeschickt.</p> {% endif %}
     <p>Deine Hufflepuff-VS</p>
 {% endblock %}

@@ -1,8 +1,8 @@
 {% extends "basis.twig" %}
 
-{% block stylebody %} {% spaceless %} style="{{ block('cssbody') }}" {% endspaceless %} {% endblock %}
-{% block styleimg %} {% spaceless %} style="{{ block('cssimg') }}" {% endspaceless %} {% endblock %}
-{% block styleinhalt %} {% spaceless %} style="{{ block('cssinalt') }}" {% endspaceless %} {% endblock %}
+{% block stylebody %} style="{{ block('cssbody')|stripwhitespace|raw }}" {% endblock %}
+{% block styleimg %} style="{{ block('cssimg')|stripwhitespace|raw }}" {% endblock %}
+{% block styleinhalt %} style="{{ block('cssinhalt')|stripwhitespace|raw }}" {% endblock %}
 {% block css %}{% endblock %}
 
-{% block content %}
+{% block content %}{% endblock %}

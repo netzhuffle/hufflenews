@@ -10,7 +10,9 @@ $app->register(new Silex\Extension\TwigExtension(), array( // Twig: Template-Fra
     'twig.class_path' => __DIR__.'/vendor/twig'
 ));
 function stripWhitespace($string) { // Funktion für Twig-Filter um alle Whitespace-Zeichen eines Strings zu entfernen
-    return preg_replace('/\s/', '', $string);
+    $string = preg_replace('/\s/', '', $string);
+    $string = str_replace('ComicSansMS', 'Comic Sans MS', $string); // 'Comic Sans MS' wieder zurück korrigieren
+    return $string;
 }
 $app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespace')); // Filter in Twig registrieren
 $app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions

@@ -1,29 +1,16 @@
 <?php
-require_once __DIR__.'/vendor/silex/silex.phar';
+require_once __DIR__.'/conf.php'; // Konfigurationsvariablen
+require_once __DIR__.'/vendor/silex/silex.phar'; // Silex: Haupt-Framework
+require_once __DIR__.'/vendor/swift/swift_required.php'; // Swift: Mail-Library
 $app = new Silex\Application();
 
-/* Einstellungen */
-$newpassword = 'Diptamessenz'; // Aktuelles Hauspasswort
-$oldpasswords = array('Schwan', 'Schwein', 'Schwubb'); // Die letzten Hauspasswörter
-$newsletterpassword = 'Newsletter'; // Passwort um Newsletter zu schreiben
-$notificationspassword = 'Notifications'; // Passwort um Benachrichtigungen zu schreiben
-$usereditpassword = 'Blubber'; // Passwort um Empfänger zu löschen oder auf Nur-Text umzustellen
-
 /* Konfigurieren */
-$app->register(new Silex\Extension\TwigExtension(), array(
+$app->register(new Silex\Extension\TwigExtension(), array( // Twig: Template-Framework
     'twig.path'		  => __DIR__.'/views',
     'twig.class_path' => __DIR__.'/vendor/twig'
 ));
-$app->register(new Silex\Extension\SessionExtension());
+$app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions
 $app['debug'] = true; // Debug-Modus
-
-/* Zentrale Konstanten und Funktionen */
-define('OPTION_NEWSLETTER', 1); // Option: Newsletter abbonieren (Binär: 01)
-define('OPTION_NOTIFICATION', 2); // Option: Benachrichtigungen abbonieren (Binär: 10)
-$convertToken = function($token) { // Teilt $token in $token['user'] und $token['mail'] auf
-    $token = base64_decode($token);
-    return split('&', $token);
-};
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function () use ($app) {
@@ -99,8 +86,32 @@ $app->get('/register', function () use ($app) {
     $name = $app['session']->get('name');
     $email = $app['session']->get('email');
     $abo = $app['session']->get('abo');
+    $newsletter = $abo['newsletter'] ? 0 : 1;
+    $notifications = $abo['notifications'] ? 0 : 1;
+    $token = base64_encode("$name,$email,$newsletter,$notifications");
     
-    // TODO E-Mail schicken
+    $textemail = $app['twig']->render('confirmemail', array(
+    	'name' => $name,
+    	'token' => $token,
+    	'html' => false
+    ));
+    $htmlemail = $app['twig']->render('confirmemail', array(
+    	'name' => $name,
+    	'token' => $token,
+    	'html' => true
+    ));
+    
+    $email = Swift_Message::newInstance("E-Mail Bestätigung für Hufflepuff-News");
+    $email->setFrom(array($smtpMail => $smtpName));
+    $email->setTo(array($email => $name));
+    $email->setBody($htmlemail, 'text/html');
+    $email->addPart($textemail, 'text/plain');
+    
+    $transport = Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
+    $transport->setUsername($smtpUser);
+    $transport->setPassword($smtpPassword);
+    $mailer = Swift_Mailer::newInstance($transport);
+    $mailer->send($email);
     
     return $app['twig']->render('register.twig', array(
         'name' => $name
@@ -110,12 +121,12 @@ $app->get('/register', function () use ($app) {
 /* Mail-Bestätigung (verschickt letzten Newsletter und nimmt in Datenbank auf) */
 $app->get('/confirm/{options}/{token}', function ($options, $token) use ($app) {
     return "$name, du bist theoretisch registriert und hast Mail an $mail!";
-})->convert('token', $convertToken);
+});
 
 /* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */
 $app->get('/options/{token}', function ($token) use ($app) {
     return "Newsletter/Benachrichtigungen an/aus!";
-})->convert('token', $convertToken);
+});
 /* Optionen speichern */
 $app->post('/options/{token}', function ($token) use ($app) {
     $request = $app['request'];
@@ -123,7 +134,7 @@ $app->post('/options/{token}', function ($token) use ($app) {
     $notification = $request->get('notification');
     
     return "Newsletter ($newsletter) und Benachrichtigungen ($notification) theoretisch gespeichert!";
-})->convert('token', $convertToken);
+});
 
 return $app;
 ?>

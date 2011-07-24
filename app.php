@@ -90,12 +90,12 @@ $app->get('/register', function () use ($app) {
     $notifications = $abo['notifications'] ? 0 : 1;
     $token = base64_encode("$name,$email,$newsletter,$notifications");
     
-    $textemail = $app['twig']->render('confirmemail', array(
+    $textemail = $app['twig']->render('confirmemail.twig', array(
     	'name' => $name,
     	'token' => $token,
     	'html' => false
     ));
-    $htmlemail = $app['twig']->render('confirmemail', array(
+    $htmlemail = $app['twig']->render('confirmemail.twig', array(
     	'name' => $name,
     	'token' => $token,
     	'html' => true

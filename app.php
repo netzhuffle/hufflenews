@@ -9,6 +9,10 @@ $app->register(new Silex\Extension\TwigExtension(), array( // Twig: Template-Fra
     'twig.path'		  => __DIR__.'/views',
     'twig.class_path' => __DIR__.'/vendor/twig'
 ));
+function strip_blanks($string) { // Funktion für Twig-Filter um alle Leerzeichen eines Strings zu entfernen
+    return str_replace(' ', '', $string);
+}
+$app['twig']->addFilter('stripblanks', new Twig_Filter_Function('strip_blanks')); // Filter in Twig registrieren
 $app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions
 $app['debug'] = true; // Debug-Modus
 

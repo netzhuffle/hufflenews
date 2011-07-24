@@ -5,9 +5,15 @@ require_once __DIR__.'/vendor/swift/swift_required.php'; // Swift: Mail-Library
 $app = new Silex\Application();
 
 /* Konfigurieren */
+$app['debug'] = $debug; // Debug-Modus
+$twigOptions = array('debug' => $debug); // Twig-Optionen
+if($cacheTemplates) {
+    $twigOptions['cache'] = $cacheTemplatesPath;
+}
 $app->register(new Silex\Extension\TwigExtension(), array( // Twig: Template-Framework
-    'twig.path'		  => __DIR__.'/views',
-    'twig.class_path' => __DIR__.'/vendor/twig'
+    'twig.path'        => __DIR__.'/views',
+    'twig.class_path'  => __DIR__.'/vendor/twig',
+    'twig.options'     => $twigOptions
 ));
 function stripWhitespace($string) { // Funktion für Twig-Filter um alle Whitespace-Zeichen eines Strings zu entfernen
     $string = preg_replace('/\s/', '', $string);
@@ -16,7 +22,6 @@ function stripWhitespace($string) { // Funktion für Twig-Filter um alle Whitesp
 }
 $app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespace')); // Filter in Twig registrieren
 $app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions
-$app['debug'] = true; // Debug-Modus
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function () use ($app) {
@@ -96,15 +101,18 @@ $app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer,
     $notifications = $abo['notifications'] ? 0 : 1;
     $token = base64_encode("$name,$email,$newsletter,$notifications");
     
-    $textemail = $app['twig']->render('confirmemail.twig', array(
+    $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');
+    $htmlemail = $emailtemplate->render(array(
     	'name' => $name,
     	'token' => $token,
-    	'html' => false
-    ));
-    $htmlemail = $app['twig']->render('confirmemail.twig', array(
-    	'name' => $name,
-    	'token' => $token,
+        'newsletter' => $newsletter,
     	'html' => true
+    ));
+    $textemail = $emailtemplate->render(array(
+    	'name' => $name,
+    	'token' => $token,
+        'newsletter' => $newsletter,
+    	'html' => false
     ));
     
     $message = Swift_Message::newInstance("E-Mail Bestätigung für Hufflepuff-News");

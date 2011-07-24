@@ -21,3 +21,8 @@ $smtpMail = 'fettermoench@huffle-home.de'; // Absender-Mailadresse
 $smtpName = 'Fetter Moench'; // Absender-Name
 $smtpUser = 'info'; // Benutzername
 $smtpPassword = ''; // Passwort
+
+/* App */
+$debug = false; // Debug-Modus (für Silex und Twig)
+$cacheTemplates = false; // Ob Templates gecached werden sollen
+$cacheTemplatesPath = __DIR__.'/views/cache'; // Absoluter Pfad zum Cache für Silex-Templates (muss beschreibbar sein!)

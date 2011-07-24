@@ -82,7 +82,7 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
 });
 
 /* Registrierung (verschickt Bestätigungs-Mail) */
-$app->get('/register', function () use ($app) {
+$app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer, $smtpPort, $smtpUser, $smtpPassword) {
     $name = $app['session']->get('name');
     $email = $app['session']->get('email');
     $abo = $app['session']->get('abo');
@@ -101,20 +101,30 @@ $app->get('/register', function () use ($app) {
     	'html' => true
     ));
     
-    $email = Swift_Message::newInstance("E-Mail Bestätigung für Hufflepuff-News");
-    $email->setFrom(array($smtpMail => $smtpName));
-    $email->setTo(array($email => $name));
-    $email->setBody($htmlemail, 'text/html');
-    $email->addPart($textemail, 'text/plain');
+    $message = Swift_Message::newInstance("E-Mail Bestätigung für Hufflepuff-News");
+    $message->setFrom(array($smtpMail => $smtpName));
+    $message->setTo(array($email => $name));
+    $message->setBody($htmlemail, 'text/html');
+    $message->addPart($textemail, 'text/plain');
     
     $transport = Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
     $transport->setUsername($smtpUser);
     $transport->setPassword($smtpPassword);
     $mailer = Swift_Mailer::newInstance($transport);
-    $mailer->send($email);
+    $failure = $mailer->send($message);
     
     return $app['twig']->render('register.twig', array(
-        'name' => $name
+        'name' => $name,
+        'failure' => $failure
+    ));
+});
+
+/* Registrierungsmailvorschau */
+$app->get('/register/preview/{html}', function ($html) use ($app) {
+    return $app['twig']->render('confirmemail.twig', array(
+    	'name' => "Fetter Mönch",
+    	'token' => "abcdef",
+    	'html' => $html
     ));
 });
 

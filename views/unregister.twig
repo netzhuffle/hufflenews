@@ -1,0 +1,41 @@
+{% extends "basis.twig" %}
+
+{% block content %}
+	{% if admin %}
+		Hier kannst du die Daten des ausgew&auml;hlten Users &auml;ndern.
+	{% else %}
+		Hier kannst du deine Daten &auml;ndern.
+	{% endif %}
+	<form method=post action={{ app.request.uriForPath("/saveoptions") }}>
+	<p>
+		{% if error.name %}
+			<span class=error>Gib einen Namen ein.<br></span>
+		{% endif %}
+		<label>Name: <input value="{{ name }}" required name=name></label><br>
+		{% if error.email %}
+			<span class=error>Gib eine E-Mail-Adresse ein.<br></span>
+		{% endif %}
+		<label>E-Mail: <input value="{{ email }}" required type=email name=email></label>
+	</p>
+	<p>
+		{% if admin %}
+			Was soll dem User zugeschickt werden?<br>
+			Um einen User ganz zu l&omul;schen: Einfach beide Haken rausnehmen.
+		{% else %}
+			Was m&ouml;chtest du zugeschickt bekommen?<br>
+			Wenn du gar keine E-Mails mehr bekommen m&ouml;chtest, brauchst du einfach gar nichts anzuhaken.
+		{% endif %}
+		<label> <input {% if abo.newsletter %} checked {% endif %} type=checkbox name=abo[newsletter] value=true> Newsletter</label>
+		<label> <input {% if abo.notifications %} checked {% endif %} type=checkbox name=abo[notifications] value=true> Benachrichtigungen (Quizfragen, ...)</label>
+	</p>
+	<p>
+		{% if not admin %}
+			Wenn du deine E-Mail-Adresse ge&auml;ndert hast, bekommst du jetzt eine E-Mail zum Best&auml;tigen.
+		{% endif %}
+		<button>Senden!</button>
+	</p>
+	</form>
+	{% if admin %}
+		<p><a href='http://www.huffle-home.de/newsletter/editusers'>Zur&uuml;ck zur Userliste</a></p>
+	{% endif %}
+{% endblock %}

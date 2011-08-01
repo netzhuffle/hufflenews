@@ -1,0 +1,20 @@
+{% extends "basis.twig" %}
+
+{% block content %}
+	{% if not admin %}
+		<p>Okay, {{ name }}!</p>
+		{% if deleted %}
+			<p>Deine Daten wurden gel&ouml;scht.<br>
+			Wenn du die Huffle-News wieder haben m&ouml;chtest, kannst du dich einfach neu registrieren.</p>
+		{% else %}
+			<p>Deine Daten wurden erfolgreich ge&auml;ndert.</p>
+		{% endif %}
+		{% if emailchanged %}
+			<p>Du bekommst nun eine E-Mail mit einem Best&auml;tigungslink zugeschickt.<br>
+			Wenn du diesen Link nicht best&auml;tigst, bekommst du die Huffle-News weder zur neuen noch zur alten Adresse geschickt.</p>
+		{% endif %}
+	{% else %}
+		<p>Die Daten wurden ge&auml;ndert.
+		<a href='http://www.huffle-home.de/newsletter/editusers'>Zur&uuml;ck zur Userliste</a></p>
+	{% endif %}
+{% endblock %}

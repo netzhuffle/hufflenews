@@ -97,8 +97,8 @@ $app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer,
     $name = $app['session']->get('name');
     $email = $app['session']->get('email');
     $abo = $app['session']->get('abo');
-    $newsletter = $abo['newsletter'] ? 0 : 1;
-    $notifications = $abo['notifications'] ? 0 : 1;
+    $newsletter = $abo['newsletter'] ? 1 : 0;
+    $notifications = $abo['notifications'] ? 1 : 0;
     $token = base64_encode("$name,$email,$newsletter,$notifications");
     
     $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');

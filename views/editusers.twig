@@ -1,15 +1,18 @@
 {% extends "basis.twig" %}
 
 {% block content %}
-	<table>
-		{% for user in users %}
-			<tr>
-				<td href='http://www.huffle-home.de/newsletter/options/{{ user.token }}'>[Edit]</td>
-				<td>user.name</td>
-				<td>user.email</td>
-			</tr>
-		{% else %}
-		<tr><td>Niemand registriert.</td></tr>
-		{% endfor %}
-	</table>
+	<div id=userliste>
+		<p>Userliste:</p>
+		<table>
+			{% for user in users %}
+				<tr>
+					<td> <a href='http://www.huffle-home.de/newsletter/options/{{ user.token }}'>[Edit]</td>
+					<td>{{ user.name }}</td>
+					<td>{{ user.email }}</td>
+				</tr>
+			{% else %}
+			<tr><td>Niemand registriert.</td></tr>
+			{% endfor %}
+		</table>
+	</div>
 {% endblock %}

@@ -20,10 +20,10 @@
 	<p>
 		{% if admin %}
 			Was soll dem User zugeschickt werden?<br>
-			Um einen User ganz zu l&omul;schen: Einfach beide Haken rausnehmen.
+			Um einen User ganz zu l&ouml;schen: Einfach beide Haken rausnehmen.<br>
 		{% else %}
+			Wenn du gar keine E-Mails mehr bekommen m&ouml;chtest, kannst du einfach beide Haken rausnehmen.<br>
 			Was m&ouml;chtest du zugeschickt bekommen?<br>
-			Wenn du gar keine E-Mails mehr bekommen m&ouml;chtest, brauchst du einfach gar nichts anzuhaken.
 		{% endif %}
 		<label> <input {% if abo.newsletter %} checked {% endif %} type=checkbox name=abo[newsletter] value=true> Newsletter</label>
 		<label> <input {% if abo.notifications %} checked {% endif %} type=checkbox name=abo[notifications] value=true> Benachrichtigungen (Quizfragen, ...)</label>
@@ -32,6 +32,8 @@
 		{% if not admin %}
 			Wenn du deine E-Mail-Adresse ge&auml;ndert hast, bekommst du jetzt eine E-Mail zum Best&auml;tigen.
 		{% endif %}
+	</p>
+	<p>
 		<button>Senden!</button>
 	</p>
 	</form>

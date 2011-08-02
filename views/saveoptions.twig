@@ -10,11 +10,15 @@
 			<p>Deine Daten wurden erfolgreich ge&auml;ndert.</p>
 		{% endif %}
 		{% if emailchanged %}
-			<p>Du bekommst nun eine E-Mail mit einem Best&auml;tigungslink zugeschickt.<br>
+			<p>Du bekommst nun eine E-Mail mit einem Best&auml;tigungslink zugeschickt.
 			Wenn du diesen Link nicht best&auml;tigst, bekommst du die Huffle-News weder zur neuen noch zur alten Adresse geschickt.</p>
 		{% endif %}
 	{% else %}
-		<p>Die Daten wurden ge&auml;ndert.
-		<a href='http://www.huffle-home.de/newsletter/editusers'>Zur&uuml;ck zur Userliste</a></p>
+		{% if deleted %}
+			<p>Die Daten wurden gel&ouml;scht.</p>
+		{% else %}
+			<p>Die Daten wurden ge&auml;ndert.</p>
+		{% endif %}
+		<p><a href='http://www.huffle-home.de/newsletter/editusers'>Zur&uuml;ck zur Userliste</a></p>
 	{% endif %}
 {% endblock %}

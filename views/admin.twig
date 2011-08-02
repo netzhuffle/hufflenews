@@ -2,15 +2,15 @@
 
 {% block content %}
 	{% if newsletter %}
-	<p>Oh, gibt's nen neuen Newsletter f&uuml;r uns? <i>*freu*</i></p>
+	<p>Oh, gibt's nen neuen Newsletter f&uuml;r uns? *freu*</p>
 	{% else %}
 	<p>Huch, eine Benachrichtigung? Wir sind gespannt!</p>
 	{% endif %}
 	<p>Noch ein paar Tipps: HTML ist erlaubt, sollte aber nicht zu oft eingesetzt werden, sonst wird das ganze etwas overpowered.<br>
-    z.B. <b>fett</b> gibt's durch &lt;b&gt;text&lt;/b&gt;, <i>kursiv</i> mit &lt;i&gt;text&lt;/i&gt;.<br>
+    z.B. <b>fett</b> gibt's durch &lt;b&gt;text&lt;/b&gt;, <i>kursiv</i> mit &lt;i&gt;text&lt;/i&gt;.
     Wenn du irgendwo {{ '{{USER}}' }} eingibst, wird das mit dem Namen des Empf&auml;ngers ersetzt. Damit kannst du den Text viel pers&ouml;nlicher machen!</p>
 	<form method=post action={{ app.request.uriForPath("/preview") }}>
 	<button>Fertig, bereit zum senden, los, abschicken!</button>
-	<textarea rows=9 cols=100>Hallo {{ '{{USER}}' }},<br>...</textarea>
+	<textarea rows=9 cols=100>Hallo {{ '{{USER}}' }}, ...</textarea>
 	</form>
 {% endblock %}

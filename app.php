@@ -160,5 +160,67 @@ $app->post('/options/{token}', function ($token) use ($app) {
     return "Newsletter ($newsletter) und Benachrichtigungen ($notification) theoretisch gespeichert!";
 });
 
+/* Confirm-Seite */
+$app->get('/confirm', function () use ($app) {
+    return $app['twig']->render('confirm.twig', array(
+    	'name' => "Emilia",
+    	'lastnumber' => "29",
+    	'lastdate' => "31.06."
+    ));
+});
+
+/* Editusers-Seite */
+$app->get('/editusers', function () use ($app) {
+    return $app['twig']->render('editusers.twig', array(
+    	'users' => array(
+    		array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),
+    		array('name' => "JANNiS", 'email' => "jannis@example.com", 'token' => "12354"),
+    		array('name' => "User3", 'email' => "user@example.com", 'token' => "54321")
+    	)
+    ));
+});
+
+/* Preview-Seite */
+$app->get('/preview', function () use ($app) {
+    return $app['twig']->render('preview.twig', array(
+    	'text' => array('html' => "Hallo HTML!", 'text' => "Hallo Text!")
+    ));
+});
+
+/* Options-Seite */
+$app->get('/options', function () use ($app) {
+    return $app['twig']->render('options.twig', array(
+    	'error' => array('name' => false, 'email' => false),
+    	'abo' => array('newsletter' => true, 'notifications' => true),
+    	'name' => "Emilia",
+    	'email' => "emilia@example.com",
+    	'admin' => true
+    ));
+});
+
+/* Saveoptions-Seite */
+$app->get('/saveoptions', function () use ($app) {
+    return $app['twig']->render('saveoptions.twig', array(
+    	'name' => "Emilia",
+    	'deleted' => false,
+    	'admin' => false,
+    	'emailchanged' => true
+    ));
+});
+
+/* Send-Seite */
+$app->get('/send', function () use ($app) {
+    return $app['twig']->render('send.twig', array(
+    	'anzahl' => 59
+    ));
+});
+
+/* Admin-Seite */
+$app->get('/admin', function () use ($app) {
+    return $app['twig']->render('admin.twig', array(
+    	'newsletter' => false
+    ));
+});
+
 return $app;
 ?>

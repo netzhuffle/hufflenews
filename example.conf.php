@@ -8,10 +8,9 @@ $notificationspassword = 'Notifications'; // Passwort um Benachrichtigungen zu s
 $usereditpassword = 'Blubber'; // Passwort um Empfänger zu löschen oder auf Nur-Text umzustellen
 
 /* Datenbank-Infos */
-$dbServer = 'localhost'; // Datenbank-Server
+$dbDSN = 'mysql:host=localhost;dbname=hufflenews'; // PDO-DSN-String, z.B. 'mysql:host=hostname;dbname=databasename'
 $dbUser = 'root'; // User-Name
 $dbPassword = ''; // User-Passwort
-$dbName = 'hufflenews'; // Datenbank (Schema) Name
 $dbTablePrefix = 'hnews_'; // Tabellen-Präfix
 
 /* SMTP-Infos */

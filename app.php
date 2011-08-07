@@ -23,6 +23,16 @@ function stripWhitespace($string) { // Funktion für Twig-Filter um alle Whitesp
 $app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespace')); // Filter in Twig registrieren
 $app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions
 
+/* Zentrale Funktionen */
+$db; // Datenbank-Verbindung (Instanz von PDO)
+function getDB() { // Stellt eine Verbindung zur Datenbank her und gibt sie zurück
+    global $db, $dbDSN, $dbUser, $dbPassword;
+    if(!isset($db)) {
+        $db = new PDO($dbDSN, $dbUser, $dbPassword);
+    }
+    return $db;
+}
+
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function () use ($app) {
     $errors = $app['session']->has('errors') ? $app['session']->get('errors') : array( // Fehler beim letzten Versuch
@@ -143,25 +153,7 @@ $app->get('/register/preview/{html}', function ($html) use ($app) {
 });
 
 /* Mail-Bestätigung (verschickt letzten Newsletter und nimmt in Datenbank auf) */
-$app->get('/confirm/{options}/{token}', function ($options, $token) use ($app) {
-    return "$name, du bist theoretisch registriert und hast Mail an $mail!";
-});
-
-/* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */
-$app->get('/options/{token}', function ($token) use ($app) {
-    return "Newsletter/Benachrichtigungen an/aus!";
-});
-/* Optionen speichern */
-$app->post('/options/{token}', function ($token) use ($app) {
-    $request = $app['request'];
-    $newsletter = $request->get('newsletter');
-    $notification = $request->get('notification');
-    
-    return "Newsletter ($newsletter) und Benachrichtigungen ($notification) theoretisch gespeichert!";
-});
-
-/* Confirm-Seite */
-$app->get('/confirm', function () use ($app) {
+$app->get('/confirm/{token}', function ($token) use ($app) {
     return $app['twig']->render('confirm.twig', array(
     	'name' => "Emilia",
     	'lastnumber' => "29",
@@ -169,26 +161,8 @@ $app->get('/confirm', function () use ($app) {
     ));
 });
 
-/* Editusers-Seite */
-$app->get('/editusers', function () use ($app) {
-    return $app['twig']->render('editusers.twig', array(
-    	'users' => array(
-    		array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),
-    		array('name' => "JANNiS", 'email' => "jannis@example.com", 'token' => "12354"),
-    		array('name' => "User3", 'email' => "user@example.com", 'token' => "54321")
-    	)
-    ));
-});
-
-/* Preview-Seite */
-$app->get('/preview', function () use ($app) {
-    return $app['twig']->render('preview.twig', array(
-    	'text' => array('html' => "Hallo HTML!", 'text' => "Hallo Text!")
-    ));
-});
-
-/* Options-Seite */
-$app->get('/options', function () use ($app) {
+/* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */
+$app->get('/options/{token}', function ($token) use ($app) {
     return $app['twig']->render('options.twig', array(
     	'error' => array('name' => false, 'email' => false),
     	'abo' => array('newsletter' => true, 'notifications' => true),
@@ -198,8 +172,12 @@ $app->get('/options', function () use ($app) {
     ));
 });
 
-/* Saveoptions-Seite */
-$app->get('/saveoptions', function () use ($app) {
+/* Optionen speichern */
+$app->post('/saveoptions', function ($token) use ($app) {
+    $request = $app['request'];
+    $newsletter = $request->get('newsletter');
+    $notification = $request->get('notification');
+    
     return $app['twig']->render('saveoptions.twig', array(
     	'name' => "Emilia",
     	'deleted' => false,
@@ -208,17 +186,35 @@ $app->get('/saveoptions', function () use ($app) {
     ));
 });
 
-/* Send-Seite */
-$app->get('/send', function () use ($app) {
+/* Admin-Seite: Verfassen von Newslettern bzw. Benachrichtigungen */
+$app->get('/admin', function () use ($app) {
+    return $app['twig']->render('admin.twig', array(
+    	'newsletter' => false
+    ));
+});
+
+/* Preview: Vorschau der E-Mail */
+$app->get('/admin/preview', function () use ($app) {
+    return $app['twig']->render('preview.twig', array(
+    	'text' => array('html' => "Hallo HTML!", 'text' => "Hallo Text!")
+    ));
+});
+
+/* Versenden */
+$app->get('/admin/send', function () use ($app) {
     return $app['twig']->render('send.twig', array(
     	'anzahl' => 59
     ));
 });
 
-/* Admin-Seite */
-$app->get('/admin', function () use ($app) {
-    return $app['twig']->render('admin.twig', array(
-    	'newsletter' => false
+/* Edit-Users: Bearbeiten von Benutzern */
+$app->get('/admin/editusers', function () use ($app) {
+    return $app['twig']->render('editusers.twig', array(
+    	'users' => array(
+    		array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),
+    		array('name' => "JANNiS", 'email' => "jannis@example.com", 'token' => "12354"),
+    		array('name' => "User3", 'email' => "user@example.com", 'token' => "54321")
+    	)
     ));
 });
 

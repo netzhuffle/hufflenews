@@ -109,7 +109,8 @@ $app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer,
     $abo = $app['session']->get('abo');
     $newsletter = $abo['newsletter'] ? 1 : 0;
     $notifications = $abo['notifications'] ? 1 : 0;
-    $token = base64_encode("$name,$email,$newsletter,$notifications");
+    $type = $newsletter + 2 * $notifications;
+    $token = base64_encode("$name,$email,$type");
     
     $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');
     $htmlemail = $emailtemplate->render(array(
@@ -153,12 +154,53 @@ $app->get('/register/preview/{html}', function ($html) use ($app) {
 });
 
 /* Mail-Bestätigung (verschickt letzten Newsletter und nimmt in Datenbank auf) */
-$app->get('/confirm/{token}', function ($token) use ($app) {
-    return $app['twig']->render('confirm.twig', array(
-    	'name' => "Emilia",
-    	'lastnumber' => "29",
-    	'lastdate' => "31.06."
-    ));
+$app->get('/confirm/{token}', function ($token) use ($app, $dbTablePrefix, $smtpMail, $smtpName, $smtpServer, $smtpPort, $smtpUser, $smtpPassword) {
+    $tokenParts = explode(",", base64_decode($token));
+    if(count($tokenParts) != 3) {
+        $app->abort(404, "Fehler: Token ungültig");
+    } else {
+        list($name, $email, $type) = $tokenParts;
+        
+        $db = getDB();
+        // In die Abonnentenliste eintragen
+        $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}members (name, mail, registerdate, type) VALUES (?, ?, now(), ?)");
+        $stmt->execute(array($name, $email, $type));
+        // Letzten Newsletter aus Datenbank abrufen
+        $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
+        $stmt->execute();
+        list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
+        
+        // Newsletter verschicken
+        $emailtemplate = $app['twig']->loadTemplate('sendemail.twig');
+        $htmlemail = $emailtemplate->render(array(
+        	'name' => $name,
+        	'token' => base64_encode($email),
+            'text' => $text,
+        	'html' => true
+        ));
+        $textemail = $emailtemplate->render(array(
+        	'name' => $name,
+        	'token' => base64_encode($email),
+            'text' => $text,
+        	'html' => false
+        ));
+        $message = Swift_Message::newInstance("Hufflepuff-Newsletter #$id");
+        $message->setFrom(array($smtpMail => $smtpName));
+        $message->setTo(array($email => $name));
+        $message->setBody($htmlemail, 'text/html');
+        $message->addPart($textemail, 'text/plain');
+        $transport = Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
+        $transport->setUsername($smtpUser);
+        $transport->setPassword($smtpPassword);
+        $mailer = Swift_Mailer::newInstance($transport);
+        $success = $mailer->send($message);
+        
+        return $app['twig']->render('confirm.twig', array(
+        	'name' => $name,
+        	'lastnumber' => $id,
+        	'lastdate' => $date
+        ));
+    }
 });
 
 /* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */

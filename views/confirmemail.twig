@@ -4,7 +4,7 @@
 	<p>Hallo {{ name }}!</p>
 	<p>Du (oder jemand anders?) hat deine Mailadresse für die Hufflepuff-News eingetragen.
     Um zu bestätigen, dass du die Hufflepuff-News wirklich empfangen willst, rufe die Seite
-    <a href='{{ app.request.uriForPath("/check/%s"|format(token)) }}'> {{ app.request.uriForPath("/check/%s"|format(token)) }}</a> auf.</p>
+    <a href='{{ app.request.uriForPath("/confirm/%s"|format(token)) }}'> {{ app.request.uriForPath("/confirm/%s"|format(token)) }}</a> auf.</p>
     {% if newsletter %} <p>Du bekommst dann auch gleich unseren letzten Newsletter zugeschickt.</p> {% endif %}
     <p>Deine Hufflepuff-VS</p>
 {% endblock %}

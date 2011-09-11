@@ -2,39 +2,99 @@
 require_once __DIR__.'/conf.php'; // Konfigurationsvariablen
 require_once __DIR__.'/vendor/silex/silex.phar'; // Silex: Haupt-Framework
 require_once __DIR__.'/vendor/swift/swift_required.php'; // Swift: Mail-Library
-$app = new Silex\Application();
+
+use Silex\Application;
+
+$app = new Application();
 
 /* Konfigurieren */
 $app['debug'] = $debug; // Debug-Modus
-$twigOptions = array('debug' => $debug); // Twig-Optionen
-if($cacheTemplates) {
-    $twigOptions['cache'] = $cacheTemplatesPath;
-}
-$app->register(new Silex\Extension\TwigExtension(), array( // Twig: Template-Framework
+$twigOptions = array( // Twig-Optionen
     'twig.path'        => __DIR__.'/views',
-    'twig.class_path'  => __DIR__.'/vendor/twig',
-    'twig.options'     => $twigOptions
-));
-function stripWhitespace($string) { // Funktion für Twig-Filter um alle Whitespace-Zeichen eines Strings zu entfernen
+    'twig.class_path'  => __DIR__.'/vendor/twig'
+);
+if($cacheTemplates) {
+    $twigOptions['twig.options'] = array('cache' => $cacheTemplatesPath);
+}
+$app->register(new Silex\Extension\TwigExtension(), $twigOptions); // Twig: Template-Framework
+/**
+ * Funktion für Twig-Filter um alle Whitespace-Zeichen eines Strings zu entfernen
+ * @param string $string der String
+ * @return String ohne Whitespaces
+ */
+function stripWhitespaceFilter($string) {
     $string = preg_replace('/\s/', '', $string);
     $string = str_replace('ComicSansMS', 'Comic Sans MS', $string); // 'Comic Sans MS' wieder zurück korrigieren
     return $string;
 }
-$app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespace')); // Filter in Twig registrieren
+$app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespaceFilter')); // Filter in Twig registrieren
 $app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions
 
 /* Zentrale Funktionen */
 $db; // Datenbank-Verbindung (Instanz von PDO)
-function getDB() { // Stellt eine Verbindung zur Datenbank her und gibt sie zurück
+/**
+ * Stellt eine Verbindung zur Datenbank her und gibt sie zurück
+ * @return PDO
+ */
+function getDB() {
     global $db, $dbDSN, $dbUser, $dbPassword;
     if(!isset($db)) {
         $db = new PDO($dbDSN, $dbUser, $dbPassword);
     }
     return $db;
 }
+/**
+ * Erstellt aus dem Originaltext einen versandbereiten Text
+ * Ersetzt {{USER}} durch den User-Namen
+ * Nutzt bei [[x|y]] bei HTML-Mails x und bei Text-Mails y
+ * Entfernt alle HTML-Tags aus Text-Mails
+ * Ändert Zeilenumbrüche in &lt;br&gt;s in HTML-Mails
+ * @param sting $newsletter Newsletter-Originaltext
+ * @param string $name der Name des Empfängers
+ * @param bool $html Ob HTML (bei false Text)
+ * @return Resultierender Text
+ */
+function createEmailText($text, $name, $html) {
+    $text = str_replace("{{USER}}", $name, $text);
+    if($html) {
+        $text = nl2br(preg_replace("/\[\[(.*)\|\|.*\]\]/isU", "$1", $text), false);
+    } else {
+        $text = strip_tags(preg_replace("/\[\[.*\|\|(.*)\]\]/isU", "$1", $text));
+    }
+    return $text;
+}
+/**
+ * Verschickt eine E-Mail
+ * @param string $subject Betreff
+ * @param array $to Empfänger: array mit Keys = E-Mail und Values = Name; z.B. array("max@example.com" => "Max", "lisa@example.org" => "Lisa")
+ * @param string $text Inhalt als Text
+ * @param string $html Inhalt als HTML
+ * @return Anzahl der erfolgreichen Empfängern
+ */
+function sendMail($subject, $to, $text, $html) {
+    global $smtpMail, $smtpName, $smtpServer, $smtpPort, $smtpUser, $smtpPassword;
+    $successful = 0;
+    $message = \Swift_Message::newInstance($subject);
+    $message->setFrom(array($smtpMail => $smtpName));
+    
+    foreach($to as $email => $name) {
+        $message->setTo(array($email => $name));
+        $message->setBody(createEmailText($html, $name, true), 'text/html');
+        $message->addPart(createEmailText($text, $name, false), 'text/plain');
+        
+        $transport = \Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
+        $transport->setUsername($smtpUser);
+        $transport->setPassword($smtpPassword);
+        $mailer = \Swift_Mailer::newInstance($transport);
+        
+        $successful += $mailer->send($message);
+    }
+    
+    return $successful;
+}
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
-$app->get('/', function () use ($app) {
+$app->get('/', function (Application $app) {
     $errors = $app['session']->has('errors') ? $app['session']->get('errors') : array( // Fehler beim letzten Versuch
         'name' => false,
         'email' => false,
@@ -55,7 +115,7 @@ $app->get('/', function () use ($app) {
 });
 
 /* Prüft die Formular-Angaben und leitet an den richtigen Pfad weiter */
-$app->post('/check', function () use ($app, $newsletterpassword, $notificationspassword, $usereditpassword, $newpassword, $oldpasswords) {
+$app->post('/check', function (Application $app) use ($newsletterpassword, $notificationspassword, $usereditpassword, $newpassword, $oldpasswords) {
     $request = $app['request'];
     $name = $request->get('name');
     $email = $request->get('email');
@@ -103,7 +163,7 @@ $app->post('/check', function () use ($app, $newsletterpassword, $notificationsp
 });
 
 /* Registrierung (verschickt Bestätigungs-Mail) */
-$app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer, $smtpPort, $smtpUser, $smtpPassword) {
+$app->get('/register', function (Application $app) {
     $name = $app['session']->get('name');
     $email = $app['session']->get('email');
     $abo = $app['session']->get('abo');
@@ -125,36 +185,16 @@ $app->get('/register', function () use ($app, $smtpMail, $smtpName, $smtpServer,
         'newsletter' => $newsletter,
     	'html' => false
     ));
-    
-    $message = Swift_Message::newInstance("E-Mail Bestätigung für Hufflepuff-News");
-    $message->setFrom(array($smtpMail => $smtpName));
-    $message->setTo(array($email => $name));
-    $message->setBody($htmlemail, 'text/html');
-    $message->addPart($textemail, 'text/plain');
-    
-    $transport = Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
-    $transport->setUsername($smtpUser);
-    $transport->setPassword($smtpPassword);
-    $mailer = Swift_Mailer::newInstance($transport);
-    $success = $mailer->send($message);
+    $successful = sendMail("E-Mail-Bestätigung für Hufflepuff-News", array($email => $name), $textemail, $htmlemail);
     
     return $app['twig']->render('register.twig', array(
         'name' => $name,
-        'success' => $success
-    ));
-});
-
-/* Registrierungsmailvorschau */
-$app->get('/register/preview/{html}', function ($html) use ($app) {
-    return $app['twig']->render('confirmemail.twig', array(
-    	'name' => "Fetter Mönch",
-    	'token' => "abcdef",
-    	'html' => $html
+        'success' => !!$successful
     ));
 });
 
 /* Mail-Bestätigung (verschickt letzten Newsletter und nimmt in Datenbank auf) */
-$app->get('/confirm/{token}', function ($token) use ($app, $dbTablePrefix, $smtpMail, $smtpName, $smtpServer, $smtpPort, $smtpUser, $smtpPassword) {
+$app->get('/confirm/{token}', function (Application $app, $token) use ($dbTablePrefix) {
     $tokenParts = explode(",", base64_decode($token));
     if(count($tokenParts) != 3) {
         $app->abort(404, "Fehler: Token ungültig");
@@ -162,38 +202,27 @@ $app->get('/confirm/{token}', function ($token) use ($app, $dbTablePrefix, $smtp
         list($name, $email, $type) = $tokenParts;
         
         $db = getDB();
-        // In die Abonnentenliste eintragen
+        /* In die Abonnentenliste eintragen */
         $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}members (name, mail, registerdate, type) VALUES (?, ?, now(), ?)");
         $stmt->execute(array($name, $email, $type));
-        // Letzten Newsletter aus Datenbank abrufen
+        /* Letzten Newsletter aus Datenbank abrufen */
         $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
         $stmt->execute();
         list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
         
-        // Newsletter verschicken
+        /* Newsletter verschicken */
         $emailtemplate = $app['twig']->loadTemplate('sendemail.twig');
         $htmlemail = $emailtemplate->render(array(
-        	'name' => $name,
-        	'token' => base64_encode($email),
             'text' => $text,
+        	'token' => base64_encode($email),
         	'html' => true
         ));
         $textemail = $emailtemplate->render(array(
-        	'name' => $name,
-        	'token' => base64_encode($email),
             'text' => $text,
+        	'token' => base64_encode($email),
         	'html' => false
         ));
-        $message = Swift_Message::newInstance("Hufflepuff-Newsletter #$id");
-        $message->setFrom(array($smtpMail => $smtpName));
-        $message->setTo(array($email => $name));
-        $message->setBody($htmlemail, 'text/html');
-        $message->addPart($textemail, 'text/plain');
-        $transport = Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
-        $transport->setUsername($smtpUser);
-        $transport->setPassword($smtpPassword);
-        $mailer = Swift_Mailer::newInstance($transport);
-        $success = $mailer->send($message);
+        sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail);
         
         return $app['twig']->render('confirm.twig', array(
         	'name' => $name,
@@ -204,7 +233,7 @@ $app->get('/confirm/{token}', function ($token) use ($app, $dbTablePrefix, $smtp
 });
 
 /* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */
-$app->get('/options/{token}', function ($token) use ($app) {
+$app->get('/options/{token}', function (Application $app, $token) {
     return $app['twig']->render('options.twig', array(
     	'error' => array('name' => false, 'email' => false),
     	'abo' => array('newsletter' => true, 'notifications' => true),
@@ -215,7 +244,7 @@ $app->get('/options/{token}', function ($token) use ($app) {
 });
 
 /* Optionen speichern */
-$app->post('/saveoptions', function ($token) use ($app) {
+$app->post('/saveoptions', function (Application $app) {
     $request = $app['request'];
     $newsletter = $request->get('newsletter');
     $notification = $request->get('notification');
@@ -229,28 +258,28 @@ $app->post('/saveoptions', function ($token) use ($app) {
 });
 
 /* Admin-Seite: Verfassen von Newslettern bzw. Benachrichtigungen */
-$app->get('/admin', function () use ($app) {
+$app->get('/admin', function (Application $app) {
     return $app['twig']->render('admin.twig', array(
     	'newsletter' => false
     ));
 });
 
 /* Preview: Vorschau der E-Mail */
-$app->get('/admin/preview', function () use ($app) {
+$app->get('/admin/preview', function (Application $app) {
     return $app['twig']->render('preview.twig', array(
     	'text' => array('html' => "Hallo HTML!", 'text' => "Hallo Text!")
     ));
 });
 
 /* Versenden */
-$app->get('/admin/send', function () use ($app) {
+$app->get('/admin/send', function (Application $app) {
     return $app['twig']->render('send.twig', array(
     	'anzahl' => 59
     ));
 });
 
 /* Edit-Users: Bearbeiten von Benutzern */
-$app->get('/admin/editusers', function () use ($app) {
+$app->get('/admin/editusers', function (Application $app) {
     return $app['twig']->render('editusers.twig', array(
     	'users' => array(
     		array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),

@@ -4,6 +4,6 @@
 	<p>{{ text|raw }}</p>
 	<p style="font-size: 0.7em;">
 	M&ouml;chtest du die Newsletter oder Benachrichtigungen abbestellen oder deine E-Mail-Adresse &auml;ndern?
-    <a href='http://www.huffle-home.de/newsletter/options/{{ token }}'>http://www.huffle-home.de/newsletter/options/{{ token }}</a> auf.
+    <a href='{{ app.request.uriForPath("/options/" ~ token) }}'>{{ app.request.uriForPath("/options/" ~ token) }}</a> auf.
     </p>
 {% endblock %}

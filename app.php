@@ -76,20 +76,20 @@ function sendMail($subject, $to, $text, $html) {
     $successful = 0;
     $message = \Swift_Message::newInstance($subject);
     $message->setFrom(array($smtpMail => $smtpName));
-    
+
     foreach($to as $email => $name) {
         $message->setTo(array($email => $name));
         $message->setBody(createEmailText($html, $name, true), 'text/html');
         $message->addPart(createEmailText($text, $name, false), 'text/plain');
-        
+
         $transport = \Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
         $transport->setUsername($smtpUser);
         $transport->setPassword($smtpPassword);
         $mailer = \Swift_Mailer::newInstance($transport);
-        
+
         $successful += $mailer->send($message);
     }
-    
+
     return $successful;
 }
 
@@ -123,7 +123,7 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
     if(!isset($abo['newsletter'])) $abo['newsletter'] = false;
     if(!isset($abo['notifications'])) $abo['notifications'] = false;
     $password = $request->get('password');
-    
+
     /* Admin-Bereiche */
     if($password === $newsletterpassword) {
         $app['session']->set('admin', 'newsletter');
@@ -134,7 +134,7 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
     } elseif($password === $usereditpassword) {
         $app['session']->set('admin', 'useredit');
         return $app->redirect($request->getUriForPath('/useredit'));
-    /* Registrierung */
+        /* Registrierung */
     } else {
         $errors = array( // Prüfen auf Fehler
             'name' => !(trim($name)),
@@ -171,7 +171,9 @@ $app->get('/register', function (Application $app) {
     $notifications = $abo['notifications'] ? 1 : 0;
     $type = $newsletter + 2 * $notifications;
     $token = base64_encode("$name,$email,$type");
-    
+    $app['session']->remove('lasttry');
+    $app['session']->remove('errors');
+
     $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');
     $htmlemail = $emailtemplate->render(array(
     	'name' => $name,
@@ -186,7 +188,7 @@ $app->get('/register', function (Application $app) {
     	'html' => false
     ));
     $successful = sendMail("E-Mail-Bestätigung für Hufflepuff-News", array($email => $name), $textemail, $htmlemail);
-    
+
     return $app['twig']->render('register.twig', array(
         'name' => $name,
         'success' => !!$successful
@@ -200,7 +202,7 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
         $app->abort(404, "Fehler: Token ungültig");
     } else {
         list($name, $email, $type) = $tokenParts;
-        
+
         $db = getDB();
         /* In die Abonnentenliste eintragen */
         $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}members (name, mail, registerdate, type) VALUES (?, ?, now(), ?)");
@@ -209,21 +211,23 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
         $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
         $stmt->execute();
         list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
-        
+
         /* Newsletter verschicken */
         $emailtemplate = $app['twig']->loadTemplate('sendemail.twig');
+        $token = base64_encode($email);
         $htmlemail = $emailtemplate->render(array(
             'text' => $text,
-        	'token' => base64_encode($email),
+        	'token' => $token,
         	'html' => true
         ));
         $textemail = $emailtemplate->render(array(
             'text' => $text,
-        	'token' => base64_encode($email),
+        	'token' => $token,
         	'html' => false
         ));
+        echo $textemail;
         sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail);
-        
+
         return $app['twig']->render('confirm.twig', array(
         	'name' => $name,
         	'lastnumber' => $id,
@@ -233,27 +237,63 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
 });
 
 /* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */
-$app->get('/options/{token}', function (Application $app, $token) {
+$app->get('/options/{token}', function (Application $app, $token) use ($dbTablePrefix) {
+    $email = base64_decode($token);
+    $errors = $app['session']->has('errors') ? $app['session']->get('errors') : array(
+        'name' => false,
+        'email' => false
+    );
+    
+    if(!$app['session']->has('lasttry')) {
+        $db = getDB();
+        $stmt = $db->prepare("SELECT name, type FROM {$dbTablePrefix}members WHERE mail = ?");
+        $stmt->execute(array($email));
+        list($name, $type) = $stmt->fetch(PDO::FETCH_NUM);
+        $app['session']->set('oldmail', $email);
+    } else {
+        $lasttry = $app['session']->get('lasttry');
+        $name = $lasttry['name'];
+        $email = $lasttty['email'];
+        $type = $lasttry['type'];
+    }
+    
+    $abo = array(
+    	'newsletter' => $type & 2,
+    	'notifications' => $type & 1
+    );
+    $admin = $app['session']->get('admin') == 'useredit';
+    
     return $app['twig']->render('options.twig', array(
-    	'error' => array('name' => false, 'email' => false),
-    	'abo' => array('newsletter' => true, 'notifications' => true),
-    	'name' => "Emilia",
-    	'email' => "emilia@example.com",
-    	'admin' => true
+    	'error' => $errors,
+    	'abo' => $abo,
+    	'name' => $name,
+    	'email' => $email,
+    	'admin' => $admin
     ));
 });
 
 /* Optionen speichern */
 $app->post('/saveoptions', function (Application $app) {
     $request = $app['request'];
+    $name = $request->get('name');
+    $oldmail = $app['session']->get('oldmail');
+    $newmail = $request->get('email');
     $newsletter = $request->get('newsletter');
     $notification = $request->get('notification');
     
+    $deleted = false;
+    $admin = $app['session']->get('admin') == 'useredit';
+    $emailchanged = $oldmail !== $newmail;
+    
+    if(!$newsletter && !$notification) {
+        $deleted = true;
+    }
+
     return $app['twig']->render('saveoptions.twig', array(
-    	'name' => "Emilia",
-    	'deleted' => false,
-    	'admin' => false,
-    	'emailchanged' => true
+    	'name' => $name,
+    	'deleted' => $deleted,
+    	'admin' => $admin,
+    	'emailchanged' => $emailchanged
     ));
 });
 
@@ -282,10 +322,10 @@ $app->get('/admin/send', function (Application $app) {
 $app->get('/admin/editusers', function (Application $app) {
     return $app['twig']->render('editusers.twig', array(
     	'users' => array(
-    		array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),
-    		array('name' => "JANNiS", 'email' => "jannis@example.com", 'token' => "12354"),
-    		array('name' => "User3", 'email' => "user@example.com", 'token' => "54321")
-    	)
+    array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),
+    array('name' => "JANNiS", 'email' => "jannis@example.com", 'token' => "12354"),
+    array('name' => "User3", 'email' => "user@example.com", 'token' => "54321")
+    )
     ));
 });
 

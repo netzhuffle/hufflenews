@@ -14,9 +14,9 @@ $dbPassword = ''; // User-Passwort
 $dbTablePrefix = 'hnews_'; // Tabellen-Präfix
 
 /* SMTP-Infos */
-$smtpServer = 'localhost'; // SMTP-Server
+$smtpServer = 'localhost'; // SMTP-Host
 $smtpPort = 25; // SMTP-Port
-$smtpMail = 'fettermoench@huffle-home.de'; // Absender-Mailadresse
+$smtpMail = 'fettermoench@localhost'; // Absender-Mailadresse
 $smtpName = 'Fetter Moench'; // Absender-Name
 $smtpUser = 'info'; // Benutzername
 $smtpPassword = ''; // Passwort

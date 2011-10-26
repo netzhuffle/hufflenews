@@ -1,22 +1,22 @@
 <?php
 require_once __DIR__.'/conf.php'; // Konfigurationsvariablen
 require_once __DIR__.'/vendor/silex/silex.phar'; // Silex: Haupt-Framework
-require_once __DIR__.'/vendor/swift/swift_required.php'; // Swift: Mail-Library
 
 use Silex\Application;
 
 $app = new Application();
+$app->register(new Silex\Provider\SessionServiceProvider()); // Session: PHP-Sessions
 
-/* Konfigurieren */
+/* Twig (Template-Engine) konfigurieren */
 $app['debug'] = $debug; // Debug-Modus
 $twigOptions = array( // Twig-Optionen
-    'twig.path'        => __DIR__.'/views',
-    'twig.class_path'  => __DIR__.'/vendor/twig'
+    'twig.path'       => __DIR__.'/views',
+    'twig.class_path' => __DIR__.'/vendor/twig'
 );
 if($cacheTemplates) {
     $twigOptions['twig.options'] = array('cache' => $cacheTemplatesPath);
 }
-$app->register(new Silex\Extension\TwigExtension(), $twigOptions); // Twig: Template-Framework
+$app->register(new Silex\Provider\TwigServiceProvider(), $twigOptions);
 /**
  * Funktion für Twig-Filter um alle Whitespace-Zeichen eines Strings zu entfernen
  * @param string $string der String
@@ -28,10 +28,20 @@ function stripWhitespaceFilter($string) {
     return $string;
 }
 $app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespaceFilter')); // Filter in Twig registrieren
-$app->register(new Silex\Extension\SessionExtension()); // Session: PHP-Sessions
+
+/* Swiftmailer konfigurieren */
+$app->register(new Silex\Provider\SwiftmailerServiceProvider(), array(
+    'swiftmailer.options'	 => array(
+        'host'	    => $smtpServer,
+        'port'	    => $smtpPort,
+        'username'	=> $smtpUser,
+        'password'	=> $smtpPassword
+    ),
+    'swiftmailer.class_path' => __DIR__.'/vendor/swift/classes'
+));
 
 /* Zentrale Funktionen */
-$db; // Datenbank-Verbindung (Instanz von PDO)
+$db; // Datenbank-Verbindung (PDO-Instanz)
 /**
  * Stellt eine Verbindung zur Datenbank her und gibt sie zurück
  * @return PDO
@@ -72,7 +82,7 @@ function createEmailText($text, $name, $html) {
  * @return Anzahl der erfolgreichen Empfängern
  */
 function sendMail($subject, $to, $text, $html) {
-    global $smtpMail, $smtpName, $smtpServer, $smtpPort, $smtpUser, $smtpPassword;
+    global $app, $smtpMail, $smtpName;
     $successful = 0;
     $message = \Swift_Message::newInstance($subject);
     $message->setFrom(array($smtpMail => $smtpName));
@@ -81,13 +91,7 @@ function sendMail($subject, $to, $text, $html) {
         $message->setTo(array($email => $name));
         $message->setBody(createEmailText($html, $name, true), 'text/html');
         $message->addPart(createEmailText($text, $name, false), 'text/plain');
-
-        $transport = \Swift_SmtpTransport::newInstance($smtpServer, $smtpPort);
-        $transport->setUsername($smtpUser);
-        $transport->setPassword($smtpPassword);
-        $mailer = \Swift_Mailer::newInstance($transport);
-
-        $successful += $mailer->send($message);
+        $successful += $app['mailer']->send($message);
     }
 
     return $successful;

@@ -2,7 +2,11 @@
 
 {% block content %}
 	<p>Herzlichen Gl&uuml;ckwunsch, {{ name }}!<br>
-	Du hast dich jetzt erfolgreich eingetragen.<br>
-	Wir senden dir jetzt automatisch den letzten Newsletter (Nummer {{ lastnumber }} vom {{ lastdate }}) zu.</p>
+	Du hast dich erfolgreich eingetragen.
+	{% if newsletter %}
+	<br>
+	Wir senden dir jetzt automatisch den letzten Newsletter (Nummer {{ newsletter.number }} vom {{ newsletter.date|date("j.m.Y") }}) zu.
+	{% endif %}
+	</p>
     <p>Viel Spa&szlig; beim Lesen, deine Hufflepuff-VS.</p>
 {% endblock %}

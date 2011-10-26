@@ -207,31 +207,38 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
         /* In die Abonnentenliste eintragen */
         $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}members (name, mail, registerdate, type) VALUES (?, ?, now(), ?)");
         $stmt->execute(array($name, $email, $type));
-        /* Letzten Newsletter aus Datenbank abrufen */
-        $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
-        $stmt->execute();
-        list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
-
-        /* Newsletter verschicken */
-        $emailtemplate = $app['twig']->loadTemplate('sendemail.twig');
-        $token = base64_encode($email);
-        $htmlemail = $emailtemplate->render(array(
-            'text' => $text,
-        	'token' => $token,
-        	'html' => true
-        ));
-        $textemail = $emailtemplate->render(array(
-            'text' => $text,
-        	'token' => $token,
-        	'html' => false
-        ));
-        echo $textemail;
-        sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail);
-
+        
+        $newsletter = null;
+        if($type & 1) { // Wenn Newsletter abbonniert
+            /* Letzten Newsletter aus Datenbank abrufen */
+            $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
+            $stmt->execute();
+            list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
+    
+            /* Newsletter verschicken */
+            $emailtemplate = $app['twig']->loadTemplate('sendemail.twig');
+            $token = base64_encode($email);
+            $htmlemail = $emailtemplate->render(array(
+                'text' => $text,
+            	'token' => $token,
+            	'html' => true
+            ));
+            $textemail = $emailtemplate->render(array(
+                'text' => $text,
+            	'token' => $token,
+            	'html' => false
+            ));
+            sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail);
+            
+            $newsletter = array(
+            	'number' => $id,
+            	'date' => $date
+            );
+        }
+        
         return $app['twig']->render('confirm.twig', array(
         	'name' => $name,
-        	'lastnumber' => $id,
-        	'lastdate' => $date
+        	'newsletter' => $newsletter
         ));
     }
 });
@@ -249,17 +256,17 @@ $app->get('/options/{token}', function (Application $app, $token) use ($dbTableP
         $stmt = $db->prepare("SELECT name, type FROM {$dbTablePrefix}members WHERE mail = ?");
         $stmt->execute(array($email));
         list($name, $type) = $stmt->fetch(PDO::FETCH_NUM);
-        $app['session']->set('oldmail', $email);
+        $app['session']->set('token', $token);
     } else {
         $lasttry = $app['session']->get('lasttry');
         $name = $lasttry['name'];
-        $email = $lasttty['email'];
+        $email = $lasttry['email'];
         $type = $lasttry['type'];
     }
     
     $abo = array(
-    	'newsletter' => $type & 2,
-    	'notifications' => $type & 1
+    	'newsletter' => $type & 1,
+    	'notifications' => $type & 2
     );
     $admin = $app['session']->get('admin') == 'useredit';
     
@@ -273,20 +280,70 @@ $app->get('/options/{token}', function (Application $app, $token) use ($dbTableP
 });
 
 /* Optionen speichern */
-$app->post('/saveoptions', function (Application $app) {
+$app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
     $request = $app['request'];
     $name = $request->get('name');
-    $oldmail = $app['session']->get('oldmail');
+    $oldmail = base64_decode($app['session']->get('token'));
     $newmail = $request->get('email');
-    $newsletter = $request->get('newsletter');
-    $notification = $request->get('notification');
+    $abo = $request->get('abo');
+    $newsletter = isset($abo['newsletter']) && $abo['newsletter'] ? 1 : 0;
+    $notifications = isset($abo['notifications']) && $abo['notifications'] ? 1 : 0;
+    $type = $newsletter + 2 * $notifications;
     
+    $app['session']->remove('lasttry');
+    $app['session']->remove('errors');
     $deleted = false;
     $admin = $app['session']->get('admin') == 'useredit';
     $emailchanged = $oldmail !== $newmail;
     
-    if(!$newsletter && !$notification) {
+    $db = getDB();
+    if($type == 0) {
+        /* Löschen */
         $deleted = true;
+        $stmt = $db->prepare("DELETE FROM {$dbTablePrefix}members WHERE mail = ?");
+        $stmt->execute(array($oldmail));
+    } else {
+        /* Fehlerprüfung */
+        $errors = array(
+            'name' => !trim($name),
+            'email' => !trim($newmail)
+        );
+        if($errors['name'] || $errors['email']) {
+            $lasttry = array(
+                'name' => $name,
+                'email' => $newmail,
+                'type' => $type
+            );
+            $app['session']->set('errors', $errors);
+            $app['session']->set('lasttry', $lasttry);
+            return $app->redirect($request->getUriForPath('/options/' . $app['session']->get('token')));
+        }
+        
+        if(!$emailchanged) {
+            /* Ändern (ohne Mail) */
+            $stmt = $db->prepare("UPDATE {$dbTablePrefix}members SET name = ?, mail = ?, type = ? WHERE mail = ?");
+            $stmt->execute(array($name, $newmail, $type, $oldmail));
+        } else {
+            /* E-Mail-Änderung = löschen und neue Registrierungsmail senden */
+            $stmt = $db->prepare("DELETE FROM {$dbTablePrefix}members WHERE mail = ?");
+            $stmt->execute(array($oldmail));
+            
+            $token = base64_encode("$name,$newmail,$type");
+            $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');
+            $htmlemail = $emailtemplate->render(array(
+            	'name' => $name,
+            	'token' => $token,
+                'newsletter' => $type & 1,
+            	'html' => true
+            ));
+            $textemail = $emailtemplate->render(array(
+            	'name' => $name,
+            	'token' => $token,
+                'newsletter' => $type & 1,
+            	'html' => false
+            ));
+            $successful = sendMail("Bestätigung der geänderten E-Mail für Hufflepuff-News", array($newmail => $name), $textemail, $htmlemail);
+        }
     }
 
     return $app['twig']->render('saveoptions.twig', array(

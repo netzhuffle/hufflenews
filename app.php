@@ -99,19 +99,19 @@ function sendMail($subject, $to, $text, $html) {
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function (Application $app) {
-    $errors = $app['session']->has('errors') ? $app['session']->get('errors') : array( // Fehler beim letzten Versuch
+    $errors = $app['session']->get('errors', array( // Fehler beim letzten Versuch
         'name' => false,
         'email' => false,
         'abo' => false,
         'password' => false,
         'oldpassword' => false
-    );
-    $lasttry = $app['session']->has('lasttry') ? $app['session']->get('lasttry') : array( // Werte vom letzten Versuch
+    ));
+    $lasttry = $app['session']->get('lasttry', array( // Werte vom letzten Versuch
         'name' => '',
         'email' => '',
         'abo' => array('newsletter' => false, 'notifications' => false),
         'password' => ''
-    );
+    ));
     return $app['twig']->render('home.twig', array(
         'error' => $errors,
         'lasttry' => $lasttry
@@ -250,10 +250,10 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
 /* Optionen: Newsletter bzw. Benachrichtigungen an- und abbestellen */
 $app->get('/options/{token}', function (Application $app, $token) use ($dbTablePrefix) {
     $email = base64_decode($token);
-    $errors = $app['session']->has('errors') ? $app['session']->get('errors') : array(
+    $errors = $app['session']->get('errors', array(
         'name' => false,
         'email' => false
-    );
+    ));
     
     if(!$app['session']->has('lasttry')) {
         $db = getDB();

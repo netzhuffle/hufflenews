@@ -6,7 +6,7 @@
 		<table>
 			{% for user in users %}
 				<tr>
-					<td> <a href='http://www.huffle-home.de/newsletter/options/{{ user.token }}'>[Edit]</td>
+					<td> <a href='{{ app.request.uriForPath("/options/" ~ user.token) }}'>[Edit]</td>
 					<td>{{ user.name }}</td>
 					<td>{{ user.email }}</td>
 				</tr>

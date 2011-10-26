@@ -38,6 +38,6 @@
 	</p>
 	</form>
 	{% if admin %}
-		<p><a href='http://www.huffle-home.de/newsletter/editusers'>Zur&uuml;ck zur Userliste</a></p>
+		<p><a href='{{ app.request.uriForPath("/admin/editusers") }}'>Zur&uuml;ck zur Userliste</a></p>
 	{% endif %}
 {% endblock %}

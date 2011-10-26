@@ -13,7 +13,7 @@
 				{% block cssbody %}
 				margin: 0px;
 				padding: 0px;
-				background: url(http://www.huffle-home.de/newsletter/paper.gif);
+				background: url({{ app.request.uriForPath("/views/paper.gif") }});
 				{% endblock %}
 			}
 			img {
@@ -27,7 +27,7 @@
 			}
 			textarea {
 				border: 2px solid black;
-				background: url(http://www.huffle-home.de/newsletter/paper.gif);
+				background: url({{ app.request.uriForPath("/views/paper.gif") }});
         		text-align: center;
         		font-family: 'Comic Sans MS', sans-serif;
         		font-size: 1em;
@@ -64,7 +64,7 @@
 		{% endblock %}
 	</head>
 	<body {% block stylebody %}{% endblock %}>
-    	<img {% block styleimg %}{% endblock %} src="http://www.huffle-home.de/newsletter/logo.png" alt="Hufflepuff-Newsletter">
+    	<img {% block styleimg %}{% endblock %} src="{{ app.request.uriForPath("/views/logo.png") }}" alt="Hufflepuff-Newsletter">
 		<div id="inhalt" {% block styleinhalt %}{% endblock %}>
 			{% autoescape true %}
 			{% block content %}{% endblock %}

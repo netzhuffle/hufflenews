@@ -235,7 +235,7 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
         $newsletter = null;
         if ($type & 1) { // Wenn Newsletter abbonniert
             /* Letzten Newsletter aus Datenbank abrufen */
-            $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
+            $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date, id DESC LIMIT 1");
             $stmt->execute();
             list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
     
@@ -310,12 +310,14 @@ $app->get('/options/{token}', function (Application $app, $token) use ($dbTableP
 
 /* Optionen speichern */
 $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
-    $token = $app['session']->get('token');
+    $session = $app['session'];
+    $request = $app['request'];
+    
+    $token = $session->get('token');
     if (!$token) {
         $app->abort(403, "Fehler: Kein Token");
     }
     
-    $request = $app['request'];
     $name = $request->get('name');
     $oldmail = base64_decode($token);
     $newmail = $request->get('email');
@@ -324,10 +326,10 @@ $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
     $notifications = isset($abo['notifications']) && $abo['notifications'] ? 1 : 0;
     $type = $newsletter + 2 * $notifications;
     
-    $app['session']->remove('lasttry');
-    $app['session']->remove('errors');
+    $session->remove('lasttry');
+    $session->remove('errors');
     $deleted = false;
-    $admin = $app['session']->get('admin') == 'useredit';
+    $admin = $session->get('admin') == 'useredit';
     $emailchanged = $oldmail !== $newmail;
     
     $db = getDB();
@@ -355,8 +357,8 @@ $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
             return $app->redirect($request->getUriForPath('/options/' . $token));
         }
         
-        if (!$emailchanged) {
-            /* Ändern (ohne Mail) */
+        if (!$emailchanged || $admin) {
+            /* Ändern (Mail nur von Admin) */
             $stmt = $db->prepare("UPDATE {$dbTablePrefix}members SET name = ?, mail = ?, type = ? WHERE mail = ?");
             $stmt->execute(array($name, $newmail, $type, $oldmail));
         } else {
@@ -446,7 +448,7 @@ $app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
         $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}news (date, text) VALUES (CURDATE(), ?)");
         $stmt->execute(array($text));
         
-        $stmt = $db->prepare("SELECT id FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
+        $stmt = $db->prepare("SELECT id FROM {$dbTablePrefix}news ORDER BY date, id DESC LIMIT 1");
         $stmt->execute();
         $id = $stmt->fetchColumn();
         
@@ -486,13 +488,27 @@ $app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
 });
 
 /* Edit-Users: Bearbeiten von Benutzern */
-$app->get('/admin/editusers', function (Application $app) {
+$app->get('/admin/editusers', function (Application $app) use ($dbTablePrefix) {
+    if ($app['session']->get('admin') != 'useredit') {
+        $app->abort(403, "Zugriff verweigert");
+    }
+    
+    $db = getDB();
+    $stmt = $db->prepare("SELECT name, mail FROM {$dbTablePrefix}members");
+    $stmt->execute();
+    
+    $users = array();
+    while ($result = $stmt->fetch(PDO::FETCH_NUM)) {
+        list($name, $email) = $result;
+        $users[] = array(
+            'name' => $name,
+            'email' => $email,
+            'token' => base64_encode($email)
+        );
+    }
+    
     return $app['twig']->render('editusers.twig', array(
-    	'users' => array(
-    array('name' => "Emilia", 'email' => "emilia@example.com", 'token' => "12345"),
-    array('name' => "JANNiS", 'email' => "jannis@example.com", 'token' => "12354"),
-    array('name' => "User3", 'email' => "user@example.com", 'token' => "54321")
-    )
+    	'users' => $users
     ));
 });
 

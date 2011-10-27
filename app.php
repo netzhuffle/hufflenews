@@ -135,6 +135,9 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
     if (!isset($abo['newsletter'])) $abo['newsletter'] = false;
     if (!isset($abo['notifications'])) $abo['notifications'] = false;
     $password = $request->get('password');
+    
+    $session->remove('lasttry');
+    $session->remove('errors');
 
     /* Admin-Bereiche */
     if ($password === $newsletterpassword) {
@@ -145,7 +148,7 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
         return $app->redirect($request->getUriForPath('/admin'));
     } elseif ($password === $usereditpassword) {
         $session->set('admin', 'useredit');
-        return $app->redirect($request->getUriForPath('/useredit'));
+        return $app->redirect($request->getUriForPath('/admin/editusers'));
     } else {
         /* Registrierung */
         $errors = array( // Prüfen auf Fehler
@@ -159,8 +162,6 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
             $session->set('name', $name);
             $session->set('email', $email);
             $session->set('abo', $abo);
-            $session->remove('lasttry');
-            $session->remove('errors');
             return $app->redirect($request->getUriForPath('/register'));
         } else { // Falls Fehler
             $lasttry = array(
@@ -391,22 +392,96 @@ $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
 
 /* Admin-Seite: Verfassen von Newslettern bzw. Benachrichtigungen */
 $app->get('/admin', function (Application $app) {
+    $newsletter = false;
+    $admin = $app['session']->get('admin');
+    
+    if ($admin == 'newsletter') {
+        $newsletter = true;
+    } elseif ($admin != 'notifications') {
+        $app->abort(403, "Zugriff verweigert");
+    }
+    
     return $app['twig']->render('admin.twig', array(
-    	'newsletter' => false
+    	'newsletter' => $newsletter
     ));
 });
 
 /* Preview: Vorschau der E-Mail */
-$app->get('/admin/preview', function (Application $app) {
+$app->post('/admin/preview', function (Application $app) {
+    $admin = $app['session']->get('admin');
+    if ($admin != 'newsletter' && $admin != 'notifications') {
+        $app->abort(403, "Zugriff verweigert");
+    }
+    
+    $content = $app['request']->get('content');
+    $html = createEmailText($content, 'Huffles', true);
+    $text = createEmailText($content, 'Huffles', false);
+    $app['session']->set('text', $content);
+    
     return $app['twig']->render('preview.twig', array(
-    	'text' => array('html' => "Hallo HTML!", 'text' => "Hallo Text!")
+    	'text' => array(
+    		'html' => $html,
+    		'text' => $text
+        )
     ));
 });
 
 /* Versenden */
-$app->get('/admin/send', function (Application $app) {
+$app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
+    /* Security Stuff */
+    $admin = $app['session']->get('admin');
+    if ($admin != 'newsletter' && $admin != 'notifications') {
+        $app->abort(403, "Zugriff verweigert");
+    }
+    
+    $subject = "Huffle-News Benachrichtigung"; // Betreff bei $admin == 'notifications'
+    $text = $app['session']->get('text');
+    if (!trim($text)) {
+        $app->abort(403, "Fehler: Kein Text übergeben");
+    }
+    
+    /* Newsletter in Datenbank eintragen und Betreff ändern */
+    if ($admin == 'newsletter') {
+        $db = getDB();
+        $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}news (date, text) VALUES (CURDATE(), ?)");
+        $stmt->execute(array($text));
+        
+        $stmt = $db->prepare("SELECT id FROM {$dbTablePrefix}news ORDER BY date DESC LIMIT 1");
+        $stmt->execute();
+        $id = $stmt->fetchColumn();
+        
+        $subject = "Hufflepuff-Newsletter #$id";
+    }
+    
+    /* Mailversand */
+    $template = $app['twig']->loadTemplate('sendemail.twig');
+    $type = $admin == 'newsletter' ? 1 : 2;
+    
+    $db = getDB();
+    $stmt = $db->prepare("SELECT name, mail FROM {$dbTablePrefix}members WHERE type = 3 || type = ?");
+    $stmt->execute(array($type));
+    
+    $sent = 0;
+    while ($result = $stmt->fetch(PDO::FETCH_NUM)) {
+        list($name, $email) = $result;
+        
+        $token = base64_encode($email);
+        $htmlemail = $template->render(array(
+            'text' => $text,
+        	'token' => $token,
+        	'html' => true
+        ));
+        $textemail = $template->render(array(
+            'text' => $text,
+        	'token' => $token,
+        	'html' => false
+        ));
+        
+        $sent += sendMail($subject, array($email => $name), $textemail, $htmlemail);
+    }
+    
     return $app['twig']->render('send.twig', array(
-    	'anzahl' => 59
+    	'anzahl' => $sent
     ));
 });
 

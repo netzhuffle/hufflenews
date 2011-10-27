@@ -8,7 +8,7 @@
     <hr>
     <p id=nichthtmltext>{{ text.text }}</p>
     <hr>
-    <form method=post action={{ app.request.uriForPath("/send") }}>
+    <form method=get action={{ app.request.uriForPath("/admin/send") }}>
     <p>Ja, ich habe den Newsletter nochmal durchgelesen und keinen Fehler gefunden 
     und verspreche, dass ich nach dem Klick auf Senden geduldig warte, 
     bis die Meldung kommt, dass es versendet wurde, nicht auf Abbrechen klicke, 

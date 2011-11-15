@@ -235,7 +235,7 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
         $newsletter = null;
         if ($type & 1) { // Wenn Newsletter abbonniert
             /* Letzten Newsletter aus Datenbank abrufen */
-            $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date, id DESC LIMIT 1");
+            $stmt = $db->prepare("SELECT id, date, text FROM {$dbTablePrefix}news ORDER BY date DESC, id DESC LIMIT 1");
             $stmt->execute();
             list($id, $date, $text) = $stmt->fetch(PDO::FETCH_NUM);
     
@@ -448,7 +448,7 @@ $app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
         $stmt = $db->prepare("INSERT INTO {$dbTablePrefix}news (date, text) VALUES (CURDATE(), ?)");
         $stmt->execute(array($text));
         
-        $stmt = $db->prepare("SELECT id FROM {$dbTablePrefix}news ORDER BY date, id DESC LIMIT 1");
+        $stmt = $db->prepare("SELECT id FROM {$dbTablePrefix}news ORDER BY date DESC, id DESC LIMIT 1");
         $stmt->execute();
         $id = $stmt->fetchColumn();
         

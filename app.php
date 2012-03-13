@@ -416,8 +416,8 @@ $app->post('/admin/preview', function (Application $app) {
     }
     
     $content = $app['request']->get('content');
-    $html = createEmailText($content, 'Huffles', true);
-    $text = createEmailText($content, 'Huffles', false);
+    $html = createEmailText($content, 'Huffle', true);
+    $text = createEmailText($content, 'Huffle', false);
     $app['session']->set('text', $content);
     
     return $app['twig']->render('preview.twig', array(

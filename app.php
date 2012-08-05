@@ -14,18 +14,6 @@ $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.options'	  => array('cache' => $cacheTemplates ? $cacheTemplatesPath : false),
     'twig.class_path' => __DIR__.'/vendor/twig'
 ));
-/**
- * Funktion für Twig-Filter um alle Whitespace-Zeichen eines Strings zu entfernen
- * @param string $string der String
- * @return String ohne Whitespaces
- */
-function stripWhitespaceFilter($string) {
-    $string = preg_replace('/\s/', '', $string);
-    $string = str_replace('ComicSansMS', 'Comic Sans MS', $string); // 'Comic Sans MS' wieder zurück korrigieren
-    
-    return $string;
-}
-$app['twig']->addFilter('stripwhitespace', new Twig_Filter_Function('stripWhitespaceFilter')); // Filter in Twig registrieren
 
 /* Swiftmailer (E-Mail-Versand) konfigurieren */
 $app->register(new Silex\Provider\SwiftmailerServiceProvider(), array(

@@ -1,8 +1,8 @@
 <?php
 require_once __DIR__.'/conf.php'; // Konfigurationsvariablen
-require_once __DIR__.'/vendor/silex/silex.phar'; // Silex: Haupt-Framework
+require_once __DIR__.'/vendor/autoload.php'; // Autoloader
 
-use Silex\Application;
+use Silex\Application; // Silex (Microframework)
 
 $app = new Application();
 $app['debug'] = $debug; // Debug-Modus
@@ -11,8 +11,7 @@ $app->register(new Silex\Provider\SessionServiceProvider()); // Session: PHP-Ses
 /* Twig (Template-Engine) konfigurieren */
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path'       => __DIR__.'/views',
-    'twig.options'	  => array('cache' => $cacheTemplates ? $cacheTemplatesPath : false),
-    'twig.class_path' => __DIR__.'/vendor/twig'
+    'twig.options'	  => array('cache' => $cacheTemplates ? $cacheTemplatesPath : false)
 ));
 
 /* Swiftmailer (E-Mail-Versand) konfigurieren */
@@ -22,8 +21,7 @@ $app->register(new Silex\Provider\SwiftmailerServiceProvider(), array(
         'port'	    => $smtpPort,
         'username'	=> $smtpUser,
         'password'	=> $smtpPassword
-    ),
-    'swiftmailer.class_path' => __DIR__.'/vendor/swift/classes'
+    )
 ));
 
 /* Zentrale Funktionen */

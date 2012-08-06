@@ -1,4 +1,8 @@
 Newsletter-System für Hufflepuff im HP-FC
 
-Requires PHP 5.3 and MySQL.
+Requires at least PHP 5.3.2 and MySQL.
 To install, copy example.conf.php to conf.php and example.htaccess to .htaccess, edit both files and run install.sql on the database.
+Download Composer into the project root folder with 
+	curl -s http://getcomposer.org/installer | php
+and run
+	php composer.phar install

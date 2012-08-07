@@ -1,17 +1,23 @@
 {% extends "basis.twig" %}
 
-{% block content %}
-	Eintragen:
+{% block description %}<meta name="description" content="">{% endblock %}
+
+{% block moenchcontent %}
+	<p class="intro">Auf dieser Seite k&ouml;nnen sich alle Hufflepuffs f&uuml;r die Huffle-News eintragen.<br>
+		Diese teilen sich in Newsletter und Benachrichtigungen. Beides wird in unterschiedlichen Zeitabst&auml;nden per E-Mail verschickt. 
+		Der Newsletter berichtet regelm&auml;&szlig;ig &uuml;ber alle wichtigen Dinge, die unser Haus betreffen.
+		F&uuml;r kurzfristigere Sachen, etwa Quizfragen und Wettbewerbe, haben wir den Benachrichtigungsdienst, der euch immer auf dem Laufenden h&auml;lt.
+	</p>
 	<form method=post action={{ app.request.uriForPath("/check") }}>
 	<p>
 		{% if error.name %}
 			<span class=error>Gib deinen Namen ein.<br></span>
 		{% endif %}
-		<label>Name: <input value="{{ lasttry.name }}" required name=name></label><br>
+		<label>Verrate mir daf&uuml;r bitte deinen Namen: <input value="{{ lasttry.name }}" required name=name></label><br>
 		{% if error.email %}
 			<span class=error>Gib deine E-Mail-Adresse ein.<br></span>
 		{% endif %}
-		<label>E-Mail: <input value="{{ lasttry.email }}" required type=email name=email></label>
+		<label>Und auch noch deine E-Mail-Adresse: <input value="{{ lasttry.email }}" required type=email name=email></label>
 	</p>
 	<p>
 		{% if error.abo %}
@@ -23,12 +29,12 @@
 	</p>
 	<p>
 		{% if error.oldpassword %}
-			<span class=error>Oh Gott, das ist ja das alte Passwort! Wei&szlig; mit Bart und Staub und so...<br>
+			<span class=error>Oh Gott, das ist ja das alte Passwort! Wei&szlig; mit Bart und Staub und so&hellip;<br>
 			Du solltest schleunigst mal das neue holen. Echt! Na los. Bitte. Ehrlich.<br></span>
 		{% elseif error.password %}
 			<span class=error>Ups, das war wohl das falsche Passwort.<br></span>
 		{% endif %}
-		<label>Und zum Schluss noch das Hauspasswort:<br><input value="{{ lasttry.password }}" required name=password></label>
+		<label>Und zum Schluss noch das Hauspasswort von Hufflepuff:<br><input value="{{ lasttry.password }}" required name=password></label>
 		<button>Senden!</button>
 	</p>
 	</form>

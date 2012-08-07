@@ -1,12 +1,12 @@
 {% extends "basis.twig" %}
 
-{% block content %}
+{% block moenchcontent %}
 	<p>Herzlichen Gl&uuml;ckwunsch, {{ name }}!<br>
 	Du hast dich erfolgreich eingetragen.
 	{% if newsletter %}
 	<br>
-	Wir senden dir jetzt automatisch den letzten Newsletter (Nummer {{ newsletter.number }} vom {{ newsletter.date|date("j.m.Y") }}) zu.
+	Die Huffle-Vertrauenssch&uuml;ler senden dir jetzt automatisch den letzten Newsletter (Nummer {{ newsletter.number }} vom {{ newsletter.date|date("j.m.Y") }}) zu.
 	{% endif %}
 	</p>
-    <p>Viel Spa&szlig; beim Lesen, deine Hufflepuff-VS.</p>
+    <p>Viel Spa&szlig; beim Lesen!</p>
 {% endblock %}

@@ -2,75 +2,48 @@
 {# Grundgerüst #}
 {#	{% Forschleifen, ... ausführen %}	#}
 {#	{{ Ausdruck ausgeben }}	#}
+{# Bildaufruf: src="{{ app.request.uriForPath("/views/dateiname.png") }}"	#}
 <html>
 	<head>
-		<title>Hufflepuff-News</title>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8">
 		<meta charset="utf-8">
-		{% block css %}
-		<style>
-			body {
-				{% block cssbody %}
-				margin: 0px;
-				padding: 0px;
-				background: url({{ app.request.uriForPath("/views/paper.gif") }});
-				{% endblock %}
-			}
-			img {
-				{% block cssimg %}
-				position: absolute;
-				top: 0px;
-				left: 0px;
-				height: 380px;
-				width: 380px;
-				{% endblock %}
-			}
-			textarea {
-				border: 2px solid black;
-				background: url({{ app.request.uriForPath("/views/paper.gif") }});
-        		text-align: center;
-        		font-family: 'Comic Sans MS', sans-serif;
-        		font-size: 1em;
-        		left: 200px;
-        		right: 50px;
-			}
-			#inhalt {
-				{% block cssinhalt %}
-				position: absolute;
-				top: 200px;
-				left: 200px;
-				right: 50px;
-				z-index: 600;
-				text-align: center;
-				font-family: 'Comic Sans MS', sans-serif;
-				font-size: 1.3em;
-				{% endblock %}
-			}
-			#nichthtmltext {
-				background: white;
-				text-align: left;
-				font-family: monospace;
-				font-size: 0.8em;
-				font-style: inherit;
-				white-space: pre;
-				padding: 0.5em
-			}
-			#userliste {
-			text-align: left;
-			}
-			.error {
-				font-size: 0.8em;
-				color: #ff0000;
-			}
-		</style>
-		{% endblock %}
+		<title>Huffle-News</title>
+		<link rel="stylesheet" href="{{ app.request.uriForPath("/views/style.css") }}">
+		{% block description %}{% endblock %}
+		<!--[if lt IE 9]>
+		<script src="/assets/html5shiv.1.js"></script>
+		<![endif]-->
 	</head>
-	<body {% block stylebody %}{% endblock %}>
-    	<img {% block styleimg %}{% endblock %} src="{{ app.request.uriForPath("/views/logo.png") }}" alt="Hufflepuff-Newsletter">
-		<div id="inhalt" {% block styleinhalt %}{% endblock %}>
+	<body>
+		<header>
+			<a href="/"><img id="logo" src="{{ app.request.uriForPath("/views/logo.png") }}" alt="Huffle-Home"></a>
+			<nav>
+				<ul id="topnav">
+					<li><a href="/">Home</a></li><!-- Whitespace durch Kommentar wegnehmen
+					--><li><a href="/forum">Forum</a></li><!--
+					--><li><a href="http://hufflepuffchat.mainchat.de">Chat</a></li><!--
+					--><li><a href="/forum/index.php?page=RGallery">Galerie</a></li><!--
+					--><li><a href="/forum/index.php?page=Team">Team</a></li><!--
+					--><li><a class="aktiv" href="/newsletter">Newsletter</a></li><!--
+					--><li><a href="/links">Links</a></li>
+				</ul>
+			</nav>
+		</header>
+		<div id="content">
+			<div id="text">
+			<h1>Huffle-News</h1>
 			{% autoescape true %}
-			{% block content %}{% endblock %}
+			{% block moenchcontent %}{% endblock %}
 			{% endautoescape %}
-    	</div>
+			</div>
+			<div id="moench">
+				<img id="moenchbild" src="{{ app.request.uriForPath("/views/moench.png") }}" alt="">
+			</div>
+		</div>
+		<div id="news">
+			{% block content %}{% endblock %}
+		</div>
+		<footer>
+			<a href="/impressum">Impressum</a> – <a href="/nutzungsbedingungen">Nutzungsbedingungen</a>
+		</footer>
 	</body>
 </html>

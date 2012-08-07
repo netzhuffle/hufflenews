@@ -1,9 +1,11 @@
 {% extends "basis.twig" %}
 
+{% block moenchcontent %}
+	<p>So, dann lies die Mail sicherheitshalber nochmal durch. Darunter siehst du, wie sie f&uuml;r jemanden aussieht,
+    der keine HTML-Mails empfangen kann. Wenn du mit allem fertig bist, kannst du unten das Senden best&auml;tigen.</p>
+{% endblock %}
+
 {% block content %}
-	<p>So, dann lies die Mail sicherheitshalber nochmal durch. Darunter siehst du, wie sie f&uuml;r jemanden aussieht,<br>
-    der keine HTML-Mails empfangen kann. Wenn du mit allem fertig bist, kannst du unten das Senden best&auml;tigen</p>
-    <hr>
     <p>{{ text.html|raw }}</p>
     <hr>
     <p id=nichthtmltext>{{ text.text }}</p>

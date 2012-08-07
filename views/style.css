@@ -1,0 +1,112 @@
+header, footer, nav {
+	display: block;					/* fuer aeltere Browser */
+}
+body {
+	background-image: url(bg.jpg);
+	font-size: 81.25%;				/* 13px */
+	font-family: 'Trebuchet MS', Arial, sans-serif;
+	color: #222;
+	max-width: 1200px;
+	margin: 0 auto;
+	padding: 10px;
+}
+header {
+	overflow: auto;					/* Header-Groesse passt sich an float-Inhalte an */
+	position: relative;
+	text-align: center;
+}
+#logo {
+	height: 94px;
+	width: 408px;
+	float: left;
+	border: none;
+}
+#topnav > li {
+	display: inline;				/* auf einer Zeile */
+	margin: -1px;					/* nur 1px Trennlinie */
+}
+#topnav > li > a {
+	padding: 6px 15px;				/* "Kasten" um obere Navigationspunkte */
+	background: #8B5A2B;
+	color: lightGoldenrodYellow;
+	border: 1px solid beige;
+	text-decoration: none;
+}
+#topnav > li > a:hover {
+	background: lightGoldenrodYellow;
+	color: #8B5A2B;
+}
+#topnav > li > a:active, footer > a, #hpfc, a[href^="mailto:"] {
+	color: black;
+}
+#topnav > li > a.aktiv {
+	background: lightGoldenrodYellow;
+	color: black;
+}
+footer > a[href]:hover, a[href^="mailto:"]:hover {
+	color: #8B5A2B;
+}
+footer > a[href]:active, a[href^="mailto:"]:active {
+	color: lightGoldenrodYellow;
+}
+footer > a:not([href]) {
+	font-style: italic;				/* Link zur aktuellen Seite kein href, kursiv */
+}
+#content {
+	margin-top: 20px;
+	position: relative;
+}
+#moench {
+	position: absolute;
+	top: 0;
+}
+#text {
+	border: 1px solid #000000;		/* Rahmen der Sprechblase */
+	position: relative;
+	left: 149px;
+	padding: 20px;
+	margin: 0 200px 50px 0;
+	background: lightGoldenrodYellow;
+	border-radius: 50px;			/* abgerundete Ecken zur Sprechblase */
+}
+#moenchbild {
+	height: 350px;
+	width: 150px;
+}
+footer {
+	font-size: 0.85em;				/* 10px */
+	text-align: center;
+}
+h1 {
+	padding-left: 5px;
+	color: #8B5A2B;
+	text-shadow: #BBB 2px 2px 2px;
+	font-size: 1.3em;				/* 17px */
+}
+h2 {
+	padding-left: 5px;
+	color: #8B5A2B;
+	text-shadow: #BBB 2px 2px 2px;
+	font-size: 1.07em;				/* 15px */
+	margin-top: 20px;
+}
+.intro {
+	margin-bottom: 30px;
+}
+
+
+
+
+#news {
+	margin-left: 150px;
+	margin-right: 50px;
+	margin-bottom: 30px;
+}
+#nichthtmltext {
+	background: white;
+	text-align: left;
+	font-family: monospace;
+	font-style: inherit;
+	white-space: pre;
+	padding: 0.5em;
+}

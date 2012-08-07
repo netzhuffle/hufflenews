@@ -1,8 +1,19 @@
-{% extends "basis.twig" %}
-
-{% block stylebody %} style="{{ block('cssbody')|stripwhitespace|raw }}" {% endblock %}
-{% block styleimg %} style="{{ block('cssimg')|stripwhitespace|raw }}" {% endblock %}
-{% block styleinhalt %} style="{{ block('cssinhalt')|stripwhitespace|raw }}" {% endblock %}
-{% block css %}{% endblock %}
-
-{% block content %}{% endblock %}
+<!DOCTYPE HTML>
+{# Grundgerüst #}
+{#	{% Forschleifen, ... ausführen %}	#}
+{#	{{ Ausdruck ausgeben }}	#}
+<html>
+	<head>
+		<title>Hufflepuff-News</title>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<meta charset="utf-8">
+	</head>
+	<body style="margin: 0px;padding: 0px;background: url({{ app.request.uriForPath("/views/bg.jpg") }});">
+    	<img style="position: absolute;top: 0px;left: 0px;height: 380px;width: 380px;" src="{{ app.request.uriForPath("/views/maillogo.png") }}" alt="Hufflepuff-Newsletter">
+		<div id="inhalt" style="position: absolute;top: 200px;left: 200px;right: 50px;z-index: 600;text-align: center;font-family: 'Comic Sans MS', sans-serif;font-size: 1.3em;">
+			{% autoescape true %}
+			{% block content %}{% endblock %}
+			{% endautoescape %}
+    	</div>
+	</body>
+</html>

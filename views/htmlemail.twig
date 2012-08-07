@@ -11,8 +11,8 @@
 	<body style="margin: 0px;padding: 0px;background: url({{ app.request.uriForPath("/views/bg.jpg") }});">
     	<img style="position: absolute;top: 0px;left: 0px;height: 380px;width: 380px;" src="{{ app.request.uriForPath("/views/maillogo.png") }}" alt="Hufflepuff-Newsletter">
 		<div id="inhalt" style="position: absolute;top: 200px;left: 200px;right: 50px;z-index: 600;text-align: center;font-family: 'Comic Sans MS', sans-serif;font-size: 1.3em;">
-			{% autoescape true %}
-			{% block content %}{% endblock %}
+			{% autoescape %}
+			    {% block content %}{% endblock %}
 			{% endautoescape %}
     	</div>
 	</body>

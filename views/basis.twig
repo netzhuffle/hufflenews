@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="{{ app.request.uriForPath("/views/style.css") }}">
 		{% block description %}{% endblock %}
 		<!--[if lt IE 9]>
-		<script src="/assets/html5shiv.1.js"></script>
+		<script src="{{ app.request.uriForPath("/views/html5shiv.js") }}"></script>
 		<![endif]-->
 	</head>
 	<body>
@@ -18,13 +18,15 @@
 			<a href="/"><img id="logo" src="{{ app.request.uriForPath("/views/logo.png") }}" alt="Huffle-Home"></a>
 			<nav>
 				<ul id="topnav">
-					<li><a href="/">Home</a></li><!-- Whitespace durch Kommentar wegnehmen
-					--><li><a href="/forum">Forum</a></li><!--
-					--><li><a href="http://hufflepuffchat.mainchat.de">Chat</a></li><!--
-					--><li><a href="/forum/index.php?page=RGallery">Galerie</a></li><!--
-					--><li><a href="/forum/index.php?page=Team">Team</a></li><!--
-					--><li><a class="aktiv" href="/newsletter">Newsletter</a></li><!--
-					--><li><a href="/links">Links</a></li>
+				{% spaceless %}
+					<li><a href="/">Home</a></li>
+					<li><a href="/forum">Forum</a></li>
+					<li><a href="http://hufflepuffchat.mainchat.de">Chat</a></li>
+					<li><a href="/forum/index.php?page=RGallery">Galerie</a></li>
+					<li><a href="/forum/index.php?page=Team">Team</a></li>
+					<li><a class="aktiv" href="/newsletter">Newsletter</a></li>
+					<li><a href="/links">Links</a></li>
+				{% endspaceless %}
 				</ul>
 			</nav>
 		</header>

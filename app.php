@@ -47,7 +47,7 @@ function getDB()
 /**
  * Erstellt aus dem Originaltext einen versandbereiten Text
  * Ersetzt {{USER}} durch den User-Namen
- * Nutzt bei [[x|y]] bei HTML-Mails x und bei Text-Mails y
+ * Nutzt bei [[x||y]] bei HTML-Mails x und bei Text-Mails y
  * Entfernt alle HTML-Tags aus Text-Mails
  * Ändert Zeilenumbrüche in &lt;br&gt;s in HTML-Mails
  * @param sting $newsletter Newsletter-Originaltext

@@ -1,9 +1,8 @@
 {
     "name": "huffle-home/hufflenews",
     "license": "MIT",
-    "minimum-stability": "dev",
     "require": {
-        "silex/silex": "*",
+        "silex/silex": "@dev",
         "twig/twig": "*",
         "swiftmailer/swiftmailer": "*"
     }

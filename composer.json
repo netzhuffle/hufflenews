@@ -2,8 +2,18 @@
     "name": "huffle-home/hufflenews",
     "license": "MIT",
     "require": {
-        "silex/silex": "@dev",
-        "twig/twig": "*",
-        "swiftmailer/swiftmailer": "*"
+        "php": ">=5.3.3",
+        "silex/silex": "1.0.*@dev",
+        "symfony/twig-bridge": "~2.2",
+    	"swiftmailer/swiftmailer": "4.2.*",
+        "silex/web-profiler": "1.0.*"
+    },
+    "autoload": {
+        "psr-0": { "": "src/" }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "1.0.x-dev"
+        }
     }
 }

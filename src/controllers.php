@@ -1,115 +1,26 @@
 <?php
-require_once __DIR__.'/conf.php'; // Konfigurationsvariablen
-require_once __DIR__.'/vendor/autoload.php'; // Autoloader
 
-use Silex\Application; // Silex (Microframework)
-
-$app = new Application();
-$app['debug'] = $debug; // Debug-Modus
-$app->register(new Silex\Provider\SessionServiceProvider()); // Session: PHP-Sessions
-
-/* Twig (Template-Engine) konfigurieren */
-$app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path'       => __DIR__.'/views',
-    'twig.options'	  => array('cache' => $cacheTemplates ? $cacheTemplatesPath : false)
-));
-
-/* Swiftmailer (E-Mail-Versand) konfigurieren */
-$app->register(new Silex\Provider\SwiftmailerServiceProvider(), array(
-    'swiftmailer.options'	 => array(
-        'host'	    => $smtpServer,
-        'port'	    => $smtpPort,
-        'username'	=> $smtpUser,
-        'password'	=> $smtpPassword
-    )
-));
-
-/* Zentrale Funktionen */
-$db; // Datenbank-Verbindung (PDO-Instanz)
-/**
- * Stellt eine Verbindung zur Datenbank her und gibt sie zurück
- * @return PDO
- */
-function getDB()
-{
-    global $db, $app, $dbDSN, $dbUser, $dbPassword;
-    if (!isset($db)) {
-        try {
-            $db = new PDO($dbDSN, $dbUser, $dbPassword);
-        } catch (PDOException $e) {
-            $app->abort(500, "Fehler: Keine Datenbankverbindung");
-        }
-    }
-
-    return $db;
-}
-
-/**
- * Erstellt aus dem Originaltext einen versandbereiten Text
- * Ersetzt {{USER}} durch den User-Namen
- * Nutzt bei [[x||y]] bei HTML-Mails x und bei Text-Mails y
- * Entfernt alle HTML-Tags aus Text-Mails
- * Ändert Zeilenumbrüche in &lt;br&gt;s in HTML-Mails
- * @param sting $newsletter Newsletter-Originaltext
- * @param string $name der Name des Empfängers
- * @param bool $html Ob HTML (bei false Text)
- * @return Resultierender Text
- */
-function createEmailText($text, $name, $html)
-{
-    $text = str_replace("{{USER}}", $name, $text);
-    if ($html) {
-        $text = nl2br(preg_replace("/\[\[(.*)\|\|.*\]\]/isU", "$1", $text), false);
-    } else {
-        $text = strip_tags(preg_replace("/\[\[.*\|\|(.*)\]\]/isU", "$1", $text));
-    }
-
-    return $text;
-}
-
-/**
- * Verschickt eine E-Mail
- * @param string $subject Betreff
- * @param array $to Empfänger: array mit Keys = E-Mail und Values = Name; z.B. array("max@example.com" => "Max", "lisa@example.org" => "Lisa")
- * @param string $text Inhalt als Text
- * @param string $html Inhalt als HTML
- * @return Anzahl der erfolgreichen Empfängern
- */
-function sendMail($subject, $to, $text, $html)
-{
-    global $app, $smtpMail, $smtpName;
-    $successful = 0;
-    $message = \Swift_Message::newInstance($subject);
-    $message->setFrom(array($smtpMail => $smtpName));
-    foreach ($to as $email => $name) {
-        $message->setTo(array($email => $name));
-        $message->setBody(createEmailText($html, $name, true), 'text/html');
-        $message->addPart(createEmailText($text, $name, false), 'text/plain');
-        $successful += $app['mailer']->send($message);
-    }
-
-    return $successful;
-}
+use Silex\Application;
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function (Application $app) {
     $errors = $app['session']->get('errors', array( // Fehler beim letzten Versuch
-        'name' => false,
-        'email' => false,
-        'abo' => false,
-        'password' => false,
-        'oldpassword' => false
+            'name' => false,
+            'email' => false,
+            'abo' => false,
+            'password' => false,
+            'oldpassword' => false
     ));
     $lasttry = $app['session']->get('lasttry', array( // Werte vom letzten Versuch
-        'name' => '',
-        'email' => '',
-        'abo' => array('newsletter' => false, 'notifications' => false),
-        'password' => ''
+            'name' => '',
+            'email' => '',
+            'abo' => array('newsletter' => false, 'notifications' => false),
+            'password' => ''
     ));
 
     return $app['twig']->render('home.twig', array(
-        'error' => $errors,
-        'lasttry' => $lasttry
+            'error' => $errors,
+            'lasttry' => $lasttry
     ));
 });
 
@@ -144,11 +55,11 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
     } else {
         /* Registrierung */
         $errors = array( // Prüfen auf Fehler
-            'name' => !(trim($name)),
-            'email' => !(trim($email)),
-            'abo' => !($abo['newsletter'] || $abo['notifications']),
-            'password' => $password !== $newpassword,
-            'oldpassword' => in_array($password, $oldpasswords)
+                'name' => !(trim($name)),
+                'email' => !(trim($email)),
+                'abo' => !($abo['newsletter'] || $abo['notifications']),
+                'password' => $password !== $newpassword,
+                'oldpassword' => in_array($password, $oldpasswords)
         );
         if (!($errors['name'] || $errors['email'] || $errors['abo'] || $errors['password'])) { // Falls kein Fehler
             $session->set('name', $name);
@@ -158,10 +69,10 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
             return $app->redirect($request->getUriForPath('/register'));
         } else { // Falls Fehler
             $lasttry = array(
-                'name' => $name,
-                'email' => $email,
-                'abo' => array('newsletter' => $abo['newsletter'], 'notifications' => $abo['notifications']),
-                'password' => $password
+                    'name' => $name,
+                    'email' => $email,
+                    'abo' => array('newsletter' => $abo['newsletter'], 'notifications' => $abo['notifications']),
+                    'password' => $password
             );
             $session->set('errors', $errors);
             $session->set('lasttry', $lasttry);
@@ -193,22 +104,22 @@ $app->get('/register', function (Application $app) {
 
     $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');
     $htmlemail = $emailtemplate->render(array(
-        'name' => $name,
-        'token' => $token,
-        'newsletter' => $newsletter,
-        'html' => true
+            'name' => $name,
+            'token' => $token,
+            'newsletter' => $newsletter,
+            'html' => true
     ));
     $textemail = $emailtemplate->render(array(
-        'name' => $name,
-        'token' => $token,
-        'newsletter' => $newsletter,
-        'html' => false
+            'name' => $name,
+            'token' => $token,
+            'newsletter' => $newsletter,
+            'html' => false
     ));
     $successful = sendMail("E-Mail-Bestätigung für Hufflepuff-News", array($email => $name), $textemail, $htmlemail);
 
     return $app['twig']->render('register.twig', array(
-        'name' => $name,
-        'success' => !!$successful
+            'name' => $name,
+            'success' => !!$successful
     ));
 });
 
@@ -236,26 +147,26 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
             $emailtemplate = $app['twig']->loadTemplate('sendemail.twig');
             $token = base64_encode($email);
             $htmlemail = $emailtemplate->render(array(
-                'text' => $text,
-                'token' => $token,
-                'html' => true
+                    'text' => $text,
+                    'token' => $token,
+                    'html' => true
             ));
             $textemail = $emailtemplate->render(array(
-                'text' => $text,
-                'token' => $token,
-                'html' => false
+                    'text' => $text,
+                    'token' => $token,
+                    'html' => false
             ));
             sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail);
 
             $newsletter = array(
-                'number' => $id,
-                'date' => $date
+                    'number' => $id,
+                    'date' => $date
             );
         }
 
         return $app['twig']->render('confirm.twig', array(
-            'name' => $name,
-            'newsletter' => $newsletter
+                'name' => $name,
+                'newsletter' => $newsletter
         ));
     }
 });
@@ -264,8 +175,8 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
 $app->get('/options/{token}', function (Application $app, $token) use ($dbTablePrefix) {
     $email = base64_decode($token);
     $errors = $app['session']->get('errors', array(
-        'name' => false,
-        'email' => false
+            'name' => false,
+            'email' => false
     ));
 
     if (!$app['session']->has('lasttry')) {
@@ -287,17 +198,17 @@ $app->get('/options/{token}', function (Application $app, $token) use ($dbTableP
     }
 
     $abo = array(
-        'newsletter' => $type & 1,
-        'notifications' => $type & 2
+            'newsletter' => $type & 1,
+            'notifications' => $type & 2
     );
     $admin = $app['session']->get('admin') == 'useredit';
 
     return $app['twig']->render('options.twig', array(
-        'error' => $errors,
-        'abo' => $abo,
-        'name' => $name,
-        'email' => $email,
-        'admin' => $admin
+            'error' => $errors,
+            'abo' => $abo,
+            'name' => $name,
+            'email' => $email,
+            'admin' => $admin
     ));
 });
 
@@ -334,15 +245,15 @@ $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
     } else {
         /* Fehlerprüfung */
         $errors = array(
-            'name' => !trim($name),
-            'email' => !trim($newmail)
+                'name' => !trim($name),
+                'email' => !trim($newmail)
         );
 
         if ($errors['name'] || $errors['email']) {
             $lasttry = array(
-                'name' => $name,
-                'email' => $newmail,
-                'type' => $type
+                    'name' => $name,
+                    'email' => $newmail,
+                    'type' => $type
             );
             $app['session']->set('errors', $errors);
             $app['session']->set('lasttry', $lasttry);
@@ -362,26 +273,26 @@ $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
             $token = base64_encode("$name,$newmail,$type");
             $emailtemplate = $app['twig']->loadTemplate('confirmemail.twig');
             $htmlemail = $emailtemplate->render(array(
-                'name' => $name,
-                'token' => $token,
-                'newsletter' => $type & 1,
-                'html' => true
+                    'name' => $name,
+                    'token' => $token,
+                    'newsletter' => $type & 1,
+                    'html' => true
             ));
             $textemail = $emailtemplate->render(array(
-                'name' => $name,
-                'token' => $token,
-                'newsletter' => $type & 1,
-                'html' => false
+                    'name' => $name,
+                    'token' => $token,
+                    'newsletter' => $type & 1,
+                    'html' => false
             ));
             $successful = sendMail("Bestätigung der geänderten E-Mail für Hufflepuff-News", array($newmail => $name), $textemail, $htmlemail);
         }
     }
 
     return $app['twig']->render('saveoptions.twig', array(
-        'name' => $name,
-        'deleted' => $deleted,
-        'admin' => $admin,
-        'emailchanged' => $emailchanged
+            'name' => $name,
+            'deleted' => $deleted,
+            'admin' => $admin,
+            'emailchanged' => $emailchanged
     ));
 });
 
@@ -397,7 +308,7 @@ $app->get('/admin', function (Application $app) {
     }
 
     return $app['twig']->render('admin.twig', array(
-        'newsletter' => $newsletter
+            'newsletter' => $newsletter
     ));
 });
 
@@ -414,10 +325,10 @@ $app->post('/admin/preview', function (Application $app) {
     $app['session']->set('text', $content);
 
     return $app['twig']->render('preview.twig', array(
-        'text' => array(
-            'html' => $html,
-            'text' => $text
-        )
+            'text' => array(
+                    'html' => $html,
+                    'text' => $text
+            )
     ));
 });
 
@@ -462,21 +373,21 @@ $app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
 
         $token = base64_encode($email);
         $htmlemail = $template->render(array(
-            'text' => $text,
-            'token' => $token,
-            'html' => true
+                'text' => $text,
+                'token' => $token,
+                'html' => true
         ));
         $textemail = $template->render(array(
-            'text' => $text,
-            'token' => $token,
-            'html' => false
+                'text' => $text,
+                'token' => $token,
+                'html' => false
         ));
 
         $sent += sendMail($subject, array($email => $name), $textemail, $htmlemail);
     }
 
     return $app['twig']->render('send.twig', array(
-        'anzahl' => $sent
+            'anzahl' => $sent
     ));
 });
 
@@ -494,15 +405,13 @@ $app->get('/admin/editusers', function (Application $app) use ($dbTablePrefix) {
     while ($result = $stmt->fetch(PDO::FETCH_NUM)) {
         list($name, $email) = $result;
         $users[] = array(
-            'name' => $name,
-            'email' => $email,
-            'token' => base64_encode($email)
+                'name' => $name,
+                'email' => $email,
+                'token' => base64_encode($email)
         );
     }
 
     return $app['twig']->render('editusers.twig', array(
-        'users' => $users
+            'users' => $users
     ));
 });
-
-return $app;

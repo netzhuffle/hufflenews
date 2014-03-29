@@ -3,9 +3,9 @@
     "license": "MIT",
     "require": {
         "php": ">=5.3.3",
-        "silex/silex": "1.0.*@dev",
-        "symfony/twig-bridge": "~2.2",
-    	"swiftmailer/swiftmailer": "4.2.*",
+        "silex/silex": "~1.1",
+        "symfony/twig-bridge": ">=2.3,<2.5-dev",
+    	"swiftmailer/swiftmailer": "5.*",
         "silex/web-profiler": "1.0.*"
     },
     "autoload": {

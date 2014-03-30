@@ -1,6 +1,7 @@
 <?php
 
 use Silex\Application;
+use Symfony\Component\HttpFoundation\Request;
 
 /* Hauptseite mit Anmelde-Formular (und Admin-Login) */
 $app->get('/', function (Application $app) {
@@ -83,7 +84,7 @@ $app->post('/check', function (Application $app) use ($newsletterpassword, $noti
 });
 
 /* Registrierung (verschickt Bestätigungs-Mail) */
-$app->get('/register', function (Application $app) {
+$app->get('/register', function (Application $app, Request $request) {
     $session = $app['session'];
 
     $name = $session->get('name');
@@ -115,7 +116,7 @@ $app->get('/register', function (Application $app) {
             'newsletter' => $newsletter,
             'html' => false
     ));
-    $successful = sendMail("E-Mail-Bestätigung für Hufflepuff-News", array($email => $name), $textemail, $htmlemail);
+    $successful = sendMail("E-Mail-Bestätigung für Hufflepuff-News", array($email => $name), $textemail, $htmlemail, $token, $request);
 
     return $app['twig']->render('register.twig', array(
             'name' => $name,
@@ -124,7 +125,7 @@ $app->get('/register', function (Application $app) {
 });
 
 /* Mail-Bestätigung (verschickt letzten Newsletter und nimmt in Datenbank auf) */
-$app->get('/confirm/{token}', function (Application $app, $token) use ($dbTablePrefix) {
+$app->get('/confirm/{token}', function (Application $app, Request $request, $token) use ($dbTablePrefix) {
     $tokenParts = explode(",", base64_decode($token));
     if (count($tokenParts) != 3) {
         $app->abort(404, "Fehler: Token ungültig");
@@ -156,7 +157,7 @@ $app->get('/confirm/{token}', function (Application $app, $token) use ($dbTableP
                     'token' => $token,
                     'html' => false
             ));
-            sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail);
+            sendMail("Hufflepuff-Newsletter #$id", array($email => $name), $textemail, $htmlemail, $token, $request);
 
             $newsletter = array(
                     'number' => $id,
@@ -213,7 +214,7 @@ $app->get('/options/{token}', function (Application $app, $token) use ($dbTableP
 });
 
 /* Optionen speichern */
-$app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
+$app->post('/saveoptions', function (Application $app, Request $request) use ($dbTablePrefix) {
     $session = $app['session'];
     $request = $app['request'];
 
@@ -284,7 +285,7 @@ $app->post('/saveoptions', function (Application $app) use ($dbTablePrefix) {
                     'newsletter' => $type & 1,
                     'html' => false
             ));
-            $successful = sendMail("Bestätigung der geänderten E-Mail für Hufflepuff-News", array($newmail => $name), $textemail, $htmlemail);
+            $successful = sendMail("Bestätigung der geänderten E-Mail für Hufflepuff-News", array($newmail => $name), $textemail, $htmlemail, $token, $request);
         }
     }
 
@@ -333,7 +334,7 @@ $app->post('/admin/preview', function (Application $app) {
 });
 
 /* Versenden */
-$app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
+$app->get('/admin/send', function (Application $app, Request $request) use ($dbTablePrefix) {
     /* Security Stuff */
     $admin = $app['session']->get('admin');
     if ($admin != 'newsletter' && $admin != 'notifications') {
@@ -383,7 +384,7 @@ $app->get('/admin/send', function (Application $app) use ($dbTablePrefix) {
                 'html' => false
         ));
 
-        $sent += sendMail($subject, array($email => $name), $textemail, $htmlemail);
+        $sent += sendMail($subject, array($email => $name), $textemail, $htmlemail, $token, $request);
     }
 
     return $app['twig']->render('send.twig', array(

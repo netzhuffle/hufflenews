@@ -59,7 +59,7 @@ function createEmailText($text, $name, $html)
  * @param string $html Inhalt als HTML
  * @return Anzahl der erfolgreichen Empfängern
  */
-function sendMail($subject, $to, $text, $html)
+function sendMail($subject, $to, $text, $html, $token, $request)
 {
     global $app, $smtpMail, $smtpName;
     $successful = 0;
@@ -69,6 +69,9 @@ function sendMail($subject, $to, $text, $html)
         $message->setTo(array($email => $name));
         $message->setBody(createEmailText($html, $name, true), 'text/html');
         $message->addPart(createEmailText($text, $name, false), 'text/plain');
+        $unsubscribeLink = $request->getUriForPath('/options/' . $token);
+        $message->getHeaders()->addTextHeader('List-Unsubscribe', '<' . $unsubscribeLink . '>');
+        $message->getHeaders()->addTextHeader('Precedence', 'bulk');
         $successful += $app['mailer']->send($message);
     }
 

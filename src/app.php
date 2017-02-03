@@ -1,18 +1,20 @@
 <?php
 
 use Silex\Application;
-use Silex\Provider\UrlGeneratorServiceProvider;
-use Silex\Provider\ServiceControllerServiceProvider;
+use Silex\Provider\TwigServiceProvider;
+use Silex\Provider\SwiftmailerServiceProvider;
+use Silex\Provider\SessionServiceProvider;
+use Symfony\Component\HttpFoundation\Request;
 
 $app = new Application();
-$app->register(new UrlGeneratorServiceProvider());
-$app->register(new Silex\Provider\SessionServiceProvider());
-$app->register(new ServiceControllerServiceProvider());
+$app->register(new TwigServiceProvider());
+$app->register(new SwiftmailerServiceProvider());
+$app->register(new SessionServiceProvider());
 
 $db; // TODO rewrite to $app->share
 /**
  * Stellt eine Verbindung zur Datenbank her und gibt sie zurück
- * @return PDO
+ * @return PDO PDO instance
  */
 function getDB()
 {
@@ -34,10 +36,10 @@ function getDB()
  * Nutzt bei [[x||y]] bei HTML-Mails x und bei Text-Mails y
  * Entfernt alle HTML-Tags aus Text-Mails
  * Ändert Zeilenumbrüche in &lt;br&gt;s in HTML-Mails
- * @param sting $newsletter Newsletter-Originaltext
+ * @param string $newsletter Newsletter-Originaltext
  * @param string $name der Name des Empfängers
  * @param bool $html Ob HTML (bei false Text)
- * @return Resultierender Text
+ * @return string Resultierender Text
  */
 function createEmailText($text, $name, $html)
 {
@@ -57,9 +59,11 @@ function createEmailText($text, $name, $html)
  * @param array $to Empfänger: array mit Keys = E-Mail und Values = Name; z.B. array("max@example.com" => "Max", "lisa@example.org" => "Lisa")
  * @param string $text Inhalt als Text
  * @param string $html Inhalt als HTML
- * @return Anzahl der erfolgreichen Empfängern
+ * @param string $token Token zur Änderung von Optionen
+ * @param Request $request Request
+ * @return integer Anzahl der erfolgreichen Empfängern
  */
-function sendMail($subject, $to, $text, $html, $token, $request)
+function sendMail($subject, $to, $text, $html, $token, Request $request)
 {
     global $app, $smtpMail, $smtpName;
     $successful = 0;

@@ -8,7 +8,7 @@
 		Der Newsletter berichtet regelm&auml;&szlig;ig &uuml;ber alle wichtigen Dinge, die unser Haus betreffen.
 		F&uuml;r kurzfristigere Sachen, etwa Quizfragen und Wettbewerbe, haben wir den Benachrichtigungsdienst, der euch immer auf dem Laufenden h&auml;lt.
 	</p>
-	<form method=post action={{ app.request.uriForPath("/check") }}>
+	<form method=post action={{ global.request.uriForPath("/check") }}>
 	<p>
 		{% if error.name %}
 			<span class=error>Gib deinen Namen ein.<br></span>

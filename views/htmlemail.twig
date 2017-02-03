@@ -7,8 +7,8 @@
 		<title>Hufflepuff-News</title>
 		<meta charset="utf-8">
 	</head>
-	<body style="margin: 0px;padding: 0px;background: url({{ app.request.uriForPath("/views/bg.jpg") }});">
-    	<img style="position: absolute;top: 0px;left: 0px;height: 380px;width: 380px;" src="{{ app.request.uriForPath("/views/maillogo.png") }}" alt="Hufflepuff-Newsletter">
+	<body style="margin: 0;padding: 0;background: url({{ global.request.basePath }}/views/bg.jpg);">
+    	<img style="position: absolute;top: 0;left: 0;height: 380px;width: 380px;" src="{{ global.request.basePath }}/views/maillogo.png" alt="Hufflepuff-Newsletter">
 		<div id="inhalt" style="position: absolute;top: 200px;left: 200px;right: 50px;z-index: 600;text-align: center;font-family: 'Comic Sans MS', sans-serif;font-size: 1.3em;">
 			{% autoescape %}
 			    {% block content %}{% endblock %}

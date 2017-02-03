@@ -2,20 +2,20 @@
 {# Grundgerüst #}
 {#	{% Forschleifen, ... ausführen %}	#}
 {#	{{ Ausdruck ausgeben }}	#}
-{# Bildaufruf: src="{{ app.request.uriForPath("/views/dateiname.png") }}"	#}
+{# Bildaufruf: src="{{ global.request.basePath }}/views/dateiname.png"	#}
 <html>
 	<head>
 		<meta charset="utf-8">
 		<title>Huffle-News</title>
-		<link rel="stylesheet" href="{{ app.request.uriForPath("/views/style.css") }}">
+		<link rel="stylesheet" href="{{ global.request.basePath }}/views/style.css">
 		{% block description %}{% endblock %}
 		<!--[if lt IE 9]>
-		<script src="{{ app.request.uriForPath("/views/html5shiv.js") }}"></script>
+		<script src="{{ global.request.basePath }}/views/html5shiv.js"></script>
 		<![endif]-->
 	</head>
 	<body>
 		<header>
-			<a href="/"><img id="logo" src="{{ app.request.uriForPath("/views/logo.png") }}" alt="Huffle-Home"></a>
+			<a href="/"><img id="logo" src="{{ global.request.basePath }}/views/logo.png" alt="Huffle-Home"></a>
 			<nav>
 				<ul id="topnav">
 				{% spaceless %}
@@ -38,7 +38,7 @@
 			{% endautoescape %}
 			</div>
 			<div id="moench">
-				<img id="moenchbild" src="{{ app.request.uriForPath("/views/moench.png") }}" alt="">
+				<img id="moenchbild" src="{{ global.request.basePath }}/views/moench.png" alt="">
 			</div>
 		</div>
 		<div id="news">

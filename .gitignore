@@ -1,10 +1,6 @@
-.project
-.settings
-.buildpath
-
 .htaccess
-conf.php
-
-views/cache
-composer.phar
+config/prod.php
+dev.log
+cache/profiler
+cache/twig
 vendor

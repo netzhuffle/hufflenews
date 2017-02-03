@@ -26,9 +26,8 @@ $app->get('/', function (Application $app) {
 });
 
 /* Prüft die Formular-Angaben und leitet an den richtigen Pfad weiter */
-$app->post('/check', function (Application $app) use ($newsletterpassword, $notificationspassword, $usereditpassword, $newpassword, $oldpasswords) {
+$app->post('/check', function (Application $app, Request $request) use ($newsletterpassword, $notificationspassword, $usereditpassword, $newpassword, $oldpasswords) {
     $session = $app['session'];
-    $request = $app['request'];
 
     $name = $request->get('name');
     $email = $request->get('email');
@@ -216,7 +215,6 @@ $app->get('/options/{token}', function (Application $app, $token) use ($dbTableP
 /* Optionen speichern */
 $app->post('/saveoptions', function (Application $app, Request $request) use ($dbTablePrefix) {
     $session = $app['session'];
-    $request = $app['request'];
 
     $token = $session->get('token');
     if (!$token) {
@@ -285,7 +283,7 @@ $app->post('/saveoptions', function (Application $app, Request $request) use ($d
                     'newsletter' => $type & 1,
                     'html' => false
             ));
-            $successful = sendMail("Bestätigung der geänderten E-Mail für Hufflepuff-News", array($newmail => $name), $textemail, $htmlemail, $token, $request);
+            sendMail("Bestätigung der geänderten E-Mail für Hufflepuff-News", array($newmail => $name), $textemail, $htmlemail, $token, $request);
         }
     }
 
@@ -314,13 +312,13 @@ $app->get('/admin', function (Application $app) {
 });
 
 /* Preview: Vorschau der E-Mail */
-$app->post('/admin/preview', function (Application $app) {
+$app->post('/admin/preview', function (Application $app, Request $request) {
     $admin = $app['session']->get('admin');
     if ($admin != 'newsletter' && $admin != 'notifications') {
         $app->abort(403, "Zugriff verweigert");
     }
 
-    $content = $app['request']->get('content');
+    $content = $request->get('content');
     $html = createEmailText($content, 'Huffle', true);
     $text = createEmailText($content, 'Huffle', false);
     $app['session']->set('text', $content);

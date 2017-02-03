@@ -6,7 +6,7 @@
 	{% else %}
 		Hier kannst du deine Daten &auml;ndern.
 	{% endif %}
-	<form method=post action={{ app.request.uriForPath("/saveoptions") }}>
+	<form method=post action={{ global.request.uriForPath("/saveoptions") }}>
 	<p>
 		{% if error.name %}
 			<span class=error>Gib einen Namen ein.<br></span>
@@ -38,6 +38,6 @@
 	</p>
 	</form>
 	{% if admin %}
-		<p><a href='{{ app.request.uriForPath("/admin/editusers") }}'>Zur&uuml;ck zur Userliste</a></p>
+		<p><a href='{{ global.request.uriForPath("/admin/editusers") }}'>Zur&uuml;ck zur Userliste</a></p>
 	{% endif %}
 {% endblock %}

@@ -12,7 +12,7 @@
 {% endblock %}
 
 {% block content %}
-	<form method=post action={{ app.request.uriForPath("/admin/preview") }}>
+	<form method=post action={{ global.request.uriForPath("/admin/preview") }}>
 	<button>Fertig, bereit zum senden, los, abschicken!</button>
 	<textarea name=content rows=9 cols=100>Hallo {{ '{{USER}}' }}, …</textarea>
 	</form>

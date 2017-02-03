@@ -22,4 +22,12 @@ $smtpUser = 'info'; // Benutzername
 $smtpPassword = ''; // Passwort
 
 /* App */
-$cacheTemplates = false; // Ob Templates gecached werden sollen
+$app['twig.path'] = array(__DIR__.'/../views');
+$app['twig.options'] = array('cache' => __DIR__.'/../cache/twig');
+$app['swiftmailer.options'] = array(
+  'host'	    => $smtpServer,
+  'port'	    => $smtpPort,
+  'username'	=> $smtpUser,
+  'password'	=> $smtpPassword
+);
+$app['swiftmailer.sender_address'] = $smtpMail;
